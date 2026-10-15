@@ -7,27 +7,20 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="NutriOS" />
   <meta name="theme-color" content="#000000" />
-  <title>NutriOS Pro</title>
+  <title>NutriOS 27</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     :root {
-      --bg-primary: #000000;
-      --bg-grouped: #1C1C1E;
-      --bg-tertiary: #2C2C2E;
-      --bg-elevated: #3A3A3C;
-      --sep-opaque: #38383A;
-      --sep-non-opaque: rgba(84, 84, 88, 0.65);
-      --label-primary: #FFFFFF;
-      --label-secondary: #8E8E93;
-      --label-tertiary: #48484A;
-      --sys-blue: #0A84FF;
-      --sys-green: #30D158;
-      --sys-orange: #FF9F0A;
-      --sys-red: #FF453A;
-      --sys-cyan: #64D2FF;
-      --sys-purple: #BF5AF2;
-      --sys-pink: #FF2D55;
+      --glass-opacity: 0.58;
+      --glass-blur: 28px;
+      --glass-border-top: rgba(255, 255, 255, 0.16);
+      --glass-border-bottom: rgba(255, 255, 255, 0.05);
+      --text-primary: #FFFFFF;
+      --text-secondary: rgba(235, 235, 245, 0.56);
+      --text-tertiary: rgba(235, 235, 245, 0.30);
+      --accent-ice: #E5F0FF;
+      --spring: cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     * {
@@ -41,133 +34,224 @@
       user-select: text;
     }
 
-    /* Bloqueo de viewport exacto para iPhone 13 (390x844pt) */
     html, body {
       margin: 0;
       padding: 0;
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: var(--bg-primary);
-      color: var(--label-primary);
+      background-color: #000000;
+      color: var(--text-primary);
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
       -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.015em;
     }
 
-    .app-shell {
+    /* Fondo ambiental sutil para que Liquid Glass refracte luz */
+    .ambient-glow {
+      position: fixed;
+      top: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 340px;
+      height: 260px;
+      background: radial-gradient(circle, rgba(255,255,255,0.07) 0%, rgba(160,185,255,0.03) 45%, transparent 75%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app-frame {
       position: fixed;
       inset: 0;
       max-width: 390px;
       margin: 0 auto;
       display: flex;
       flex-direction: column;
-      background-color: var(--bg-primary);
+      z-index: 1;
     }
 
-    .scroll-viewport {
+    /* Contenedor de Scroll Nativo */
+    .scroll-stage {
       flex: 1;
       overflow-y: auto;
       overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
-      padding-top: calc(env(safe-area-inset-top, 47px) + 8px);
-      padding-bottom: calc(env(safe-area-inset-bottom, 34px) + 88px);
-      padding-left: 16px;
-      padding-right: 16px;
+      padding-top: calc(env(safe-area-inset-top, 44px) + 6px);
+      padding-bottom: 108px;
+      padding-left: 18px;
+      padding-right: 18px;
     }
-
-    .scroll-viewport::-webkit-scrollbar,
+    .scroll-stage::-webkit-scrollbar,
     .no-scrollbar::-webkit-scrollbar {
       display: none;
     }
 
-    /* Tarjetas e interfaces nativas Apple HIG */
-    .ios-card {
-      background-color: var(--bg-grouped);
-      border-radius: 16px;
-      padding: 16px;
-      border: 0.5px solid rgba(255, 255, 255, 0.06);
+    /* Material Liquid Glass de iOS 27 (Bordes definidos + iluminación especular) */
+    .liquid-glass {
+      background: linear-gradient(
+        165deg,
+        rgba(38, 38, 42, var(--glass-opacity)) 0%,
+        rgba(20, 20, 23, calc(var(--glass-opacity) + 0.12)) 100%
+      );
+      backdrop-filter: saturate(190%) blur(var(--glass-blur));
+      -webkit-backdrop-filter: saturate(190%) blur(var(--glass-blur));
+      border-top: 1px solid var(--glass-border-top);
+      border-left: 0.5px solid rgba(255, 255, 255, 0.09);
+      border-right: 0.5px solid rgba(255, 255, 255, 0.09);
+      border-bottom: 1px solid var(--glass-border-bottom);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.65), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      transition: transform 0.25s var(--spring), background 0.25s ease;
     }
 
-    .ios-card-sm {
-      background-color: var(--bg-grouped);
-      border-radius: 14px;
-      padding: 12px 14px;
-      border: 0.5px solid rgba(255, 255, 255, 0.06);
+    .liquid-pill {
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 0.5px solid rgba(255, 255, 255, 0.16);
+      border-bottom: 0.5px solid rgba(255, 255, 255, 0.05);
+      border-left: 0.5px solid rgba(255, 255, 255, 0.08);
+      border-right: 0.5px solid rgba(255, 255, 255, 0.08);
+      border-radius: 9999px;
+      transition: all 0.22s var(--spring);
     }
 
-    .ios-list {
-      background-color: var(--bg-grouped);
-      border-radius: 12px;
-      overflow: hidden;
-      border: 0.5px solid rgba(255, 255, 255, 0.06);
+    .liquid-pill:active {
+      transform: scale(0.96);
+      background: rgba(255, 255, 255, 0.12);
     }
 
-    .ios-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      min-height: 44px;
-      padding: 10px 16px;
-      border-bottom: 0.5px solid var(--sep-non-opaque);
+    /* Segmented Control iOS 27 (Dark glass is lighter, selected item has crisp contrast) */
+    .ios27-segmented {
+      background: rgba(255, 255, 255, 0.06);
+      border: 0.5px solid rgba(255, 255, 255, 0.12);
+      padding: 3px;
+      border-radius: 999px;
+      display: inline-flex;
+      backdrop-filter: blur(20px);
     }
 
-    .ios-row:last-child {
-      border-bottom: none;
+    .ios27-seg-item {
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: all 0.25s var(--spring);
     }
 
-    .ios-tabbar {
+    .ios27-seg-item.active {
+      background: rgba(255, 255, 255, 0.16);
+      color: #FFFFFF;
+      font-weight: 600;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 2px 8px rgba(0,0,0,0.4);
+    }
+
+    /* Tab Bar Flotante Concéntrica iOS 27 (Soluciona el margen excesivo inferior) */
+    .ios27-tabbar-wrap {
       position: fixed;
-      bottom: 0;
+      bottom: max(12px, calc(env(safe-area-inset-bottom, 20px) - 8px));
       left: 0;
       right: 0;
       max-width: 390px;
       margin: 0 auto;
-      height: calc(54px + env(safe-area-inset-bottom, 34px));
-      padding-bottom: env(safe-area-inset-bottom, 34px);
-      background: rgba(22, 22, 24, 0.82);
-      backdrop-filter: saturate(180%) blur(25px);
-      -webkit-backdrop-filter: saturate(180%) blur(25px);
-      border-top: 0.5px solid var(--sep-non-opaque);
-      z-index: 30;
+      padding: 0 18px;
+      z-index: 40;
+      pointer-events: none;
     }
 
-    .ios-segmented {
-      background-color: var(--bg-grouped);
-      padding: 2px;
-      border-radius: 9px;
-      display: inline-flex;
-      border: 0.5px solid rgba(255, 255, 255, 0.07);
-    }
-
-    .ios-seg-btn {
-      padding: 5px 11px;
-      border-radius: 7px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--label-secondary);
+    .ios27-tabbar {
+      pointer-events: auto;
+      height: 62px;
+      padding: 0 10px;
+      border-radius: 999px;
+      background: rgba(28, 28, 32, 0.72);
+      backdrop-filter: saturate(200%) blur(32px);
+      -webkit-backdrop-filter: saturate(200%) blur(32px);
+      border-top: 1px solid rgba(255, 255, 255, 0.20);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      border-left: 0.5px solid rgba(255, 255, 255, 0.12);
+      border-right: 0.5px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75);
       display: flex;
       align-items: center;
-      gap: 5px;
-      transition: all 0.18s ease;
+      justify-content: space-between;
+      transition: transform 0.35s var(--spring), opacity 0.3s ease;
     }
 
-    .ios-seg-btn.active {
-      background-color: var(--bg-elevated);
+    .ios27-tabbar.minimized {
+      transform: translateY(10px) scale(0.93);
+      opacity: 0.88;
+    }
+
+    .tab-item {
+      width: 58px;
+      height: 46px;
+      border-radius: 999px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      color: var(--text-secondary);
+      transition: all 0.22s var(--spring);
+    }
+
+    .tab-item.active {
+      background: rgba(255, 255, 255, 0.11);
       color: #FFFFFF;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
     }
 
-    .ring-anim {
-      transition: stroke-dashoffset 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    /* Botón de Cámara Prominente iOS 27 */
+    .camera-prominent {
+      width: 50px;
+      height: 50px;
+      border-radius: 999px;
+      background: #FFFFFF;
+      color: #000000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 18px rgba(255, 255, 255, 0.28);
+      transition: transform 0.2s var(--spring);
+      cursor: pointer;
+    }
+    .camera-prominent:active {
+      transform: scale(0.90);
+    }
+
+    /* Anillo Minimalista */
+    .ring-track {
+      stroke: rgba(255, 255, 255, 0.08);
+    }
+    .ring-progress {
+      transition: stroke-dashoffset 0.75s var(--spring);
       transform: rotate(-90deg);
       transform-origin: 50% 50%;
+    }
+
+    /* Filas de Ajustes Agrupadas */
+    .ios27-list {
+      border-radius: 20px;
+      overflow: hidden;
+    }
+    .ios27-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 16px;
+      border-bottom: 0.5px solid rgba(255, 255, 255, 0.07);
+    }
+    .ios27-row:last-child {
+      border-bottom: none;
     }
 
     input[type="range"] {
       -webkit-appearance: none;
       appearance: none;
       height: 4px;
-      background: var(--bg-tertiary);
+      background: rgba(255, 255, 255, 0.14);
       border-radius: 999px;
     }
     input[type="range"]::-webkit-slider-thumb {
@@ -176,670 +260,735 @@
       height: 18px;
       border-radius: 50%;
       background: #FFFFFF;
-      box-shadow: 0 1px 5px rgba(0,0,0,0.5);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
     }
 
-    .ios-switch {
-      position: relative;
-      width: 46px;
-      height: 28px;
-      background: var(--bg-tertiary);
+    .ios-toggle {
+      width: 44px;
+      height: 26px;
       border-radius: 999px;
-      transition: background 0.2s;
+      background: rgba(255, 255, 255, 0.14);
+      position: relative;
+      transition: background 0.25s ease;
       cursor: pointer;
     }
-    .ios-switch.on {
-      background: var(--sys-green);
+    .ios-toggle.on {
+      background: #FFFFFF;
     }
-    .ios-switch::after {
+    .ios-toggle::after {
       content: "";
       position: absolute;
       top: 2px;
       left: 2px;
-      width: 24px;
-      height: 24px;
-      background: #fff;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
-      transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+      background: #000000;
+      transition: transform 0.25s var(--spring), background 0.25s ease;
     }
-    .ios-switch.on::after {
+    .ios-toggle:not(.on)::after {
+      background: #FFFFFF;
+    }
+    .ios-toggle.on::after {
       transform: translateX(18px);
     }
   </style>
 </head>
 <body>
 
-  <div class="app-shell">
-    <div class="scroll-viewport">
+  <div class="ambient-glow"></div>
 
-      <!-- CABECERA NATIVA iOS -->
-      <header class="flex justify-between items-end mb-4">
+  <div class="app-frame">
+    <div id="scrollStage" class="scroll-stage">
+
+      <!-- CABECERA ULTRA-MINIMALISTA iOS 27 -->
+      <header class="flex justify-between items-center mb-5">
         <div>
-          <p id="dateHeader" class="text-[11px] font-semibold uppercase tracking-wider text-[#8E8E93]"></p>
-          <h1 id="viewTitle" class="text-[30px] leading-[34px] font-bold tracking-tight text-white">Resumen</h1>
+          <div class="flex items-center gap-2">
+            <p id="lblDate" class="text-[11px] font-medium uppercase tracking-widest text-[var(--text-secondary)]"></p>
+            <span id="cloudStatusDot" class="w-1.5 h-1.5 rounded-full bg-white/30" title="Estado de sincronización"></span>
+          </div>
+          <h1 id="lblTitle" class="text-[28px] font-bold tracking-tight text-white leading-tight mt-0.5">Hoy</h1>
         </div>
 
-        <div class="ios-segmented">
-          <button id="segTrain" onclick="setDayType('train')" class="ios-seg-btn active">
-            <i data-lucide="Flame" class="w-3.5 h-3.5 text-[#FF9F0A]"></i>
-            <span>Entreno</span>
-          </button>
-          <button id="segRest" onclick="setDayType('rest')" class="ios-seg-btn">
-            <i data-lucide="Moon" class="w-3.5 h-3.5 text-[#64D2FF]"></i>
-            <span>Descanso</span>
-          </button>
+        <div class="ios27-segmented">
+          <button id="btnTrain" onclick="setMode('train')" class="ios27-seg-item active">Entreno</button>
+          <button id="btnRest" onclick="setMode('rest')" class="ios27-seg-item">Descanso</button>
         </div>
       </header>
 
       <!-- ==========================================
-           VISTA 1: RESUMEN DIARIO (APPLE HEALTH STYLE)
+           PESTAÑA 1: HOY (MINIMALISMO PURO)
            ========================================== -->
-      <div id="view-today" class="space-y-3.5">
+      <main id="view-today" class="space-y-3.5">
 
-        <!-- Tarjeta de Anillos Concéntricos y Macros -->
-        <section class="ios-card">
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-1.5">
-              <i data-lucide="Activity" class="w-4 h-4 text-[#30D158]"></i>
-              <span class="text-[13px] font-semibold text-white">Balance Energético</span>
+        <!-- Tarjeta Principal: Calorías y Macronutrientes Monocromáticos -->
+        <section class="liquid-glass p-5">
+          <div class="flex items-center justify-between gap-5">
+
+            <!-- Anillo Único de Alta Precisión -->
+            <div class="relative w-[124px] h-[124px] shrink-0 flex items-center justify-center">
+              <svg class="w-full h-full" viewBox="0 0 120 120">
+                <circle class="ring-track" cx="60" cy="60" r="50" stroke-width="8" fill="none" />
+                <circle id="kcalRing" class="ring-progress" cx="60" cy="60" r="50" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" fill="none" stroke-dasharray="314.16" stroke-dashoffset="314.16" />
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                <span id="valKcal" class="text-[26px] font-bold tracking-tight leading-none">0</span>
+                <span id="lblKcalGoal" class="text-[10px] font-medium text-[var(--text-secondary)] mt-1">/ 2950 kcal</span>
+              </div>
             </div>
-            <span id="remBadge" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-[#30D158]/15 text-[#30D158]">Restan 2950 kcal</span>
+
+            <!-- Barras Minimalistas Blanco/Plata -->
+            <div class="flex-1 space-y-3">
+              <div>
+                <div class="flex justify-between text-[12px] mb-1">
+                  <span class="text-[var(--text-secondary)] font-medium">Proteínas</span>
+                  <span class="font-semibold text-white"><span id="valProt">0</span> <span class="text-[var(--text-tertiary)] font-normal">/ <span id="goalProt">170</span>g</span></span>
+                </div>
+                <div class="h-[5px] w-full bg-white/10 rounded-full overflow-hidden">
+                  <div id="barProt" class="h-full bg-white rounded-full transition-all duration-500" style="width:0%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-[12px] mb-1">
+                  <span class="text-[var(--text-secondary)] font-medium">Carbohidratos</span>
+                  <span class="font-semibold text-white"><span id="valCarb">0</span> <span class="text-[var(--text-tertiary)] font-normal">/ <span id="goalCarb">365</span>g</span></span>
+                </div>
+                <div class="h-[5px] w-full bg-white/10 rounded-full overflow-hidden">
+                  <div id="barCarb" class="h-full bg-white/75 rounded-full transition-all duration-500" style="width:0%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-[12px] mb-1">
+                  <span class="text-[var(--text-secondary)] font-medium">Grasas</span>
+                  <span class="font-semibold text-white"><span id="valFat">0</span> <span class="text-[var(--text-tertiary)] font-normal">/ <span id="goalFat">88</span>g</span></span>
+                </div>
+                <div class="h-[5px] w-full bg-white/10 rounded-full overflow-hidden">
+                  <div id="barFat" class="h-full bg-white/50 rounded-full transition-all duration-500" style="width:0%"></div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div class="flex items-center gap-4">
-            <!-- Doble Anillo Concéntrico SVG -->
-            <div class="relative w-[132px] h-[132px] shrink-0 flex items-center justify-center">
-              <svg class="w-full h-full" viewBox="0 0 120 120">
-                <circle cx="60" cy="60" r="50" stroke="#2C2C2E" stroke-width="11" fill="none" />
-                <circle id="ringKcal" class="ring-anim" cx="60" cy="60" r="50" stroke="#30D158" stroke-width="11" stroke-linecap="round" fill="none" stroke-dasharray="314.16" stroke-dashoffset="314.16" />
-                <circle cx="60" cy="60" r="36" stroke="#2C2C2E" stroke-width="9" fill="none" />
-                <circle id="ringProt" class="ring-anim" cx="60" cy="60" r="36" stroke="#0A84FF" stroke-width="9" stroke-linecap="round" fill="none" stroke-dasharray="226.19" stroke-dashoffset="226.19" />
-              </svg>
-              <div class="absolute inset-0 flex flex-col items-center justify-center">
-                <span id="lblKcalDone" class="text-[22px] font-bold tracking-tight leading-none">0</span>
-                <span id="lblKcalTarget" class="text-[10px] font-medium text-[#8E8E93] mt-1">/ 2950 KCAL</span>
-              </div>
-            </div>
-
-            <!-- Barras de Macronutrientes -->
-            <div class="flex-1 space-y-2.5">
-              <div>
-                <div class="flex justify-between text-[12px] mb-1">
-                  <span class="font-medium text-[#0A84FF] flex items-center gap-1">
-                    <i data-lucide="Dumbbell" class="w-3 h-3"></i> Proteínas
-                  </span>
-                  <span class="font-semibold"><span id="lblProtDone">0</span><span class="text-[#8E8E93] font-normal">/<span id="lblProtGoal">170</span>g</span></span>
-                </div>
-                <div class="h-1.5 w-full bg-[#2C2C2E] rounded-full overflow-hidden">
-                  <div id="barProt" class="h-full bg-[#0A84FF] rounded-full transition-all duration-500" style="width:0%"></div>
-                </div>
-              </div>
-
-              <div>
-                <div class="flex justify-between text-[12px] mb-1">
-                  <span class="font-medium text-[#FF9F0A] flex items-center gap-1">
-                    <i data-lucide="Zap" class="w-3 h-3"></i> Carbos
-                  </span>
-                  <span class="font-semibold"><span id="lblCarbDone">0</span><span class="text-[#8E8E93] font-normal">/<span id="lblCarbGoal">365</span>g</span></span>
-                </div>
-                <div class="h-1.5 w-full bg-[#2C2C2E] rounded-full overflow-hidden">
-                  <div id="barCarb" class="h-full bg-[#FF9F0A] rounded-full transition-all duration-500" style="width:0%"></div>
-                </div>
-              </div>
-
-              <div>
-                <div class="flex justify-between text-[12px] mb-1">
-                  <span class="font-medium text-[#FF453A] flex items-center gap-1">
-                    <i data-lucide="Droplet" class="w-3 h-3"></i> Grasas
-                  </span>
-                  <span class="font-semibold"><span id="lblFatDone">0</span><span class="text-[#8E8E93] font-normal">/<span id="lblFatGoal">88</span>g</span></span>
-                </div>
-                <div class="h-1.5 w-full bg-[#2C2C2E] rounded-full overflow-hidden">
-                  <div id="barFat" class="h-full bg-[#FF453A] rounded-full transition-all duration-500" style="width:0%"></div>
-                </div>
-              </div>
-
-              <div class="pt-1.5 border-t border-[#2C2C2E] flex justify-between items-center text-[11px] text-[#8E8E93]">
-                <span>Fibra: <strong id="lblFiberDone" class="text-white">0g</strong></span>
-                <button onclick="syncWithAppleHealth()" class="flex items-center gap-1 text-[#FF2D55] font-semibold active:opacity-70">
-                  <i data-lucide="Heart" class="w-3 h-3 fill-[#FF2D55]"></i>
-                  <span>Sincronizar Salud</span>
-                </button>
-              </div>
+          <!-- Pie de tarjeta: Restante + Sincronización Directa -->
+          <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-[11px]">
+            <span id="lblRemaining" class="text-[var(--text-secondary)] font-medium">Restan 2950 kcal · Fibra 0g</span>
+            <div class="flex items-center gap-3">
+              <button onclick="syncCloudDB(true)" class="flex items-center gap-1 text-[var(--text-secondary)] active:text-white">
+                <i data-lucide="Cloud" class="w-3.5 h-3.5"></i>
+                <span id="cloudBtnText">Cloud OK</span>
+              </button>
+              <button onclick="syncAppleHealth()" class="flex items-center gap-1 text-white font-medium active:opacity-60">
+                <i data-lucide="Activity" class="w-3.5 h-3.5"></i>
+                <span>Salud</span>
+              </button>
             </div>
           </div>
         </section>
 
-        <!-- Grid 2 Columnas: Hidratación y Peso Corporal -->
+        <!-- Acciones Rápidas (1 Toque: Batido + Comidas Frecuentes) -->
+        <section>
+          <div class="flex justify-between items-center mb-2 px-1">
+            <span class="text-[11px] font-medium uppercase tracking-widest text-[var(--text-secondary)]">Acciones Rápidas</span>
+            <button onclick="openPresetCreator()" class="text-[11px] text-[var(--text-secondary)] active:text-white flex items-center gap-1">
+              <i data-lucide="Plus" class="w-3 h-3"></i> Añadir
+            </button>
+          </div>
+          <div id="quickPresetsRow" class="flex gap-2 overflow-x-auto no-scrollbar pb-1"></div>
+        </section>
+
+        <!-- Sub-tarjetas Minimalistas: Agua y Peso Corporal -->
         <section class="grid grid-cols-2 gap-3">
-          <!-- Hidratación -->
-          <div class="ios-card-sm flex flex-col justify-between">
+          <div class="liquid-glass p-3.5 flex items-center justify-between">
             <div>
-              <div class="flex items-center justify-between">
-                <span class="text-[11px] font-semibold uppercase tracking-wide text-[#64D2FF]">Agua</span>
-                <i data-lucide="GlassWater" class="w-4 h-4 text-[#64D2FF]"></i>
-              </div>
-              <div class="mt-1 flex items-baseline gap-1">
-                <span id="lblWater" class="text-[20px] font-bold">0.00</span>
-                <span class="text-[11px] text-[#8E8E93]">/ 3.0 L</span>
-              </div>
+              <span class="text-[11px] text-[var(--text-secondary)] block">Agua</span>
+              <span class="text-[17px] font-bold text-white"><span id="valWater">0.0</span><span class="text-[11px] font-normal text-[var(--text-secondary)]"> L</span></span>
             </div>
-            <div class="grid grid-cols-3 gap-1.5 mt-2.5">
-              <button onclick="addWater(0.25)" class="bg-[#2C2C2E] active:bg-[#3A3A3C] py-1.5 rounded-lg text-[11px] font-semibold text-[#64D2FF]">+250</button>
-              <button onclick="addWater(0.5)" class="bg-[#2C2C2E] active:bg-[#3A3A3C] py-1.5 rounded-lg text-[11px] font-semibold text-[#64D2FF]">+500</button>
-              <button onclick="addWater(-0.25)" class="bg-[#2C2C2E] active:bg-[#3A3A3C] py-1.5 rounded-lg text-[11px] font-semibold text-[#8E8E93]">-</button>
+            <div class="flex gap-1">
+              <button onclick="addWater(0.25)" class="liquid-pill px-2.5 py-1.5 text-[11px] font-medium text-white">+250</button>
+              <button onclick="addWater(0.5)" class="liquid-pill px-2.5 py-1.5 text-[11px] font-medium text-white">+500</button>
             </div>
           </div>
 
-          <!-- Peso Corporal -->
-          <div class="ios-card-sm flex flex-col justify-between">
+          <div class="liquid-glass p-3.5 flex items-center justify-between">
             <div>
-              <div class="flex items-center justify-between">
-                <span class="text-[11px] font-semibold uppercase tracking-wide text-[#BF5AF2]">Peso</span>
-                <i data-lucide="Scale" class="w-4 h-4 text-[#BF5AF2]"></i>
-              </div>
-              <div class="mt-1 flex items-baseline gap-1">
-                <span id="lblWeight" class="text-[20px] font-bold">--</span>
-                <span class="text-[11px] text-[#8E8E93]">kg hoy</span>
-              </div>
+              <span class="text-[11px] text-[var(--text-secondary)] block">Peso</span>
+              <span class="text-[17px] font-bold text-white"><span id="valWeight">--</span><span class="text-[11px] font-normal text-[var(--text-secondary)]"> kg</span></span>
             </div>
-            <div class="flex gap-1.5 mt-2.5">
-              <input id="inpWeight" type="number" step="0.1" placeholder="74.5" class="w-full bg-[#2C2C2E] text-white text-[12px] rounded-lg px-2.5 py-1.5 focus:outline-none" />
-              <button onclick="saveWeight()" class="bg-[#BF5AF2] active:opacity-80 text-white px-2.5 rounded-lg flex items-center justify-center">
+            <div class="flex items-center gap-1">
+              <input id="inpWeight" type="number" step="0.1" placeholder="74.5" class="w-14 bg-white/5 border border-white/10 rounded-full px-2.5 py-1 text-[12px] text-white text-center focus:outline-none" />
+              <button onclick="saveWeight()" class="liquid-pill p-1.5 text-white">
                 <i data-lucide="Check" class="w-3.5 h-3.5"></i>
               </button>
             </div>
           </div>
         </section>
 
-        <!-- Acceso Rápido 1 Toque (Sin Emojis — Con Iconos) -->
-        <section>
-          <div class="flex justify-between items-center mb-2 px-0.5">
-            <span class="text-[11px] font-semibold uppercase tracking-wider text-[#8E8E93]">Registro Rápido</span>
-            <button onclick="switchView('favorites')" class="text-[12px] text-[#0A84FF] font-medium flex items-center gap-0.5">
-              <span>Gestionar</span>
-              <i data-lucide="ChevronRight" class="w-3.5 h-3.5"></i>
-            </button>
-          </div>
-          <div id="presetsCarousel" class="flex gap-2.5 overflow-x-auto no-scrollbar pb-0.5"></div>
-        </section>
-
-        <!-- Banner de Procesamiento IA -->
-        <div id="aiStatusCard" class="hidden ios-card border border-[#0A84FF]/40 flex items-center gap-3">
-          <div class="w-5 h-5 border-2 border-[#0A84FF] border-t-transparent rounded-full animate-spin shrink-0"></div>
+        <!-- Estado de Análisis de IA -->
+        <div id="aiLoader" class="hidden liquid-glass p-4 flex items-center gap-3.5">
+          <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin shrink-0"></div>
           <div>
-            <p class="text-[13px] font-semibold text-white">Analizando imagen con Gemini Vision</p>
-            <p class="text-[11px] text-[#8E8E93]">Estimando gramaje por volumetría y densidad nutricional...</p>
+            <p class="text-[13px] font-semibold text-white">Analizando fotografía con IA...</p>
+            <p class="text-[11px] text-[var(--text-secondary)]">Calculando peso, macros y guardando en base de datos</p>
           </div>
         </div>
 
-        <!-- Registro Cronológico de Comidas -->
+        <!-- Registro de Comidas del Día -->
         <section>
-          <div class="flex justify-between items-center mb-2 px-0.5">
-            <span class="text-[11px] font-semibold uppercase tracking-wider text-[#8E8E93]">Comidas de Hoy</span>
-            <button onclick="toggleTextModal(true)" class="text-[12px] text-[#0A84FF] font-medium flex items-center gap-1">
-              <i data-lucide="PenLine" class="w-3.5 h-3.5"></i>
-              <span>Escribir plato</span>
-            </button>
-          </div>
-          <div id="mealsList" class="space-y-2.5"></div>
-        </section>
-
-      </div>
-
-      <!-- ==========================================
-           VISTA 2: ANALÍTICA Y TENDENCIAS
-           ========================================== -->
-      <div id="view-analytics" class="hidden space-y-3.5">
-        <div class="grid grid-cols-3 gap-2.5">
-          <div class="ios-card-sm">
-            <span class="text-[11px] text-[#8E8E93] block">Media 7d</span>
-            <span id="statAvgKcal" class="text-[17px] font-bold text-white mt-0.5 block">0 kcal</span>
-          </div>
-          <div class="ios-card-sm">
-            <span class="text-[11px] text-[#8E8E93] block">Proteína 7d</span>
-            <span id="statAvgProt" class="text-[17px] font-bold text-[#0A84FF] mt-0.5 block">0 g</span>
-          </div>
-          <div class="ios-card-sm">
-            <span class="text-[11px] text-[#8E8E93] block">Constancia</span>
-            <span id="statAdherence" class="text-[17px] font-bold text-[#30D158] mt-0.5 block">0%</span>
-          </div>
-        </div>
-
-        <section class="ios-card">
-          <div class="flex justify-between items-center mb-3">
-            <div>
-              <h3 class="text-[14px] font-semibold text-white">Evolución Calórica (7 días)</h3>
-              <p class="text-[11px] text-[#8E8E93]">Comparativa frente a tu meta diaria</p>
+          <div class="flex justify-between items-center mb-2 px-1">
+            <span class="text-[11px] font-medium uppercase tracking-widest text-[var(--text-secondary)]">Platos de Hoy</span>
+            <div class="flex items-center gap-3">
+              <label class="text-[11px] text-[var(--text-secondary)] active:text-white flex items-center gap-1 cursor-pointer">
+                <i data-lucide="Image" class="w-3.5 h-3.5"></i> Fototeca
+                <input type="file" accept="image/*" class="hidden" onchange="handlePhoto(event)" />
+              </label>
+              <button onclick="toggleModal('textModal', true)" class="text-[11px] text-[var(--text-secondary)] active:text-white flex items-center gap-1">
+                <i data-lucide="PenLine" class="w-3.5 h-3.5"></i> Texto
+              </button>
             </div>
-            <i data-lucide="BarChart3" class="w-4 h-4 text-[#8E8E93]"></i>
           </div>
-          <div id="chart7Days" class="h-40 flex items-end justify-between gap-2 pt-5 pb-1 px-1 border-b border-[#2C2C2E]"></div>
+          <div id="mealsContainer" class="space-y-2.5"></div>
         </section>
 
-        <section class="ios-card">
-          <h3 class="text-[14px] font-semibold text-white mb-2.5">Reparto Calórico de Hoy</h3>
-          <div class="w-full h-3 bg-[#2C2C2E] rounded-full overflow-hidden flex mb-3">
-            <div id="barSplitP" class="bg-[#0A84FF] h-full transition-all" style="width: 30%"></div>
-            <div id="barSplitC" class="bg-[#FF9F0A] h-full transition-all" style="width: 45%"></div>
-            <div id="barSplitF" class="bg-[#FF453A] h-full transition-all" style="width: 25%"></div>
-          </div>
-          <div class="grid grid-cols-3 text-[12px] text-center">
-            <div><span class="inline-block w-2 h-2 rounded-full bg-[#0A84FF] mr-1"></span>Prot <strong id="pctP">0%</strong></div>
-            <div><span class="inline-block w-2 h-2 rounded-full bg-[#FF9F0A] mr-1"></span>Carb <strong id="pctC">0%</strong></div>
-            <div><span class="inline-block w-2 h-2 rounded-full bg-[#FF453A] mr-1"></span>Grasa <strong id="pctF">0%</strong></div>
-          </div>
-        </section>
-
-        <section class="ios-card">
-          <div class="flex justify-between items-center mb-2">
-            <h3 class="text-[14px] font-semibold text-white">Registro de Peso Corporal</h3>
-            <i data-lucide="TrendingUp" class="w-4 h-4 text-[#BF5AF2]"></i>
-          </div>
-          <div id="weightHistoryBox" class="divide-y divide-[#2C2C2E] text-[12px]"></div>
-        </section>
-      </div>
+      </main>
 
       <!-- ==========================================
-           VISTA 3: PLATOS FAVORITOS (1 TOQUE)
+           PESTAÑA 2: HISTORIAL Y NUBE (7 DÍAS)
            ========================================== -->
-      <div id="view-favorites" class="hidden space-y-4">
-        <section class="ios-card space-y-3">
-          <div class="flex items-center gap-2">
-            <i data-lucide="BookmarkPlus" class="w-4 h-4 text-[#0A84FF]"></i>
-            <h3 class="text-[14px] font-semibold text-white">Nuevo Plato Frecuente</h3>
+      <main id="view-analytics" class="hidden space-y-3.5">
+        <div class="grid grid-cols-3 gap-2.5">
+          <div class="liquid-glass p-3.5">
+            <span class="text-[11px] text-[var(--text-secondary)] block">Media 7d</span>
+            <span id="avgKcal7d" class="text-[16px] font-bold text-white mt-0.5 block">0 kcal</span>
           </div>
-          <input id="favName" type="text" placeholder="Nombre del plato (ej. Batido Avena y Cacahuete)" class="w-full bg-[#2C2C2E] rounded-xl px-3 py-2 text-[13px] text-white focus:outline-none" />
-          <div class="grid grid-cols-3 gap-2">
-            <select id="favIcon" class="bg-[#2C2C2E] rounded-xl px-2.5 py-2 text-[12px] text-white focus:outline-none">
-              <option value="CupSoda">Icono: Batido</option>
-              <option value="Utensils">Icono: Plato</option>
-              <option value="Beef">Icono: Carne/Ave</option>
-              <option value="Fish">Icono: Pescado</option>
-              <option value="Egg">Icono: Huevos</option>
-              <option value="Coffee">Icono: Café/Snack</option>
-            </select>
-            <input id="favWeight" type="number" placeholder="Gramos (g)" class="bg-[#2C2C2E] rounded-xl px-3 py-2 text-[13px] text-white focus:outline-none" />
-            <input id="favKcal" type="number" placeholder="Kcal" class="bg-[#2C2C2E] rounded-xl px-3 py-2 text-[13px] text-white focus:outline-none" />
+          <div class="liquid-glass p-3.5">
+            <span class="text-[11px] text-[var(--text-secondary)] block">Proteína 7d</span>
+            <span id="avgProt7d" class="text-[16px] font-bold text-white mt-0.5 block">0 g</span>
           </div>
-          <div class="grid grid-cols-3 gap-2">
-            <input id="favProt" type="number" placeholder="Proteína (g)" class="bg-[#2C2C2E] rounded-xl px-3 py-2 text-[13px] text-white focus:outline-none" />
-            <input id="favCarb" type="number" placeholder="Carbos (g)" class="bg-[#2C2C2E] rounded-xl px-3 py-2 text-[13px] text-white focus:outline-none" />
-            <input id="favFat" type="number" placeholder="Grasas (g)" class="bg-[#2C2C2E] rounded-xl px-3 py-2 text-[13px] text-white focus:outline-none" />
+          <div class="liquid-glass p-3.5">
+            <span class="text-[11px] text-[var(--text-secondary)] block">Días activos</span>
+            <span id="activeDays7d" class="text-[16px] font-bold text-white mt-0.5 block">0 / 7</span>
           </div>
-          <button onclick="addNewPreset()" class="w-full bg-[#0A84FF] active:opacity-80 text-white font-semibold py-2.5 rounded-xl text-[13px]">Guardar en Acceso Rápido</button>
+        </div>
+
+        <section class="liquid-glass p-5">
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <h3 class="text-[14px] font-semibold text-white">Balance Semanal</h3>
+              <p class="text-[11px] text-[var(--text-secondary)]">Últimos 7 días sincronizados</p>
+            </div>
+            <i data-lucide="BarChart2" class="w-4 h-4 text-[var(--text-secondary)]"></i>
+          </div>
+          <div id="chartBars" class="h-36 flex items-end justify-between gap-2 pt-4 pb-1 px-1 border-b border-white/10"></div>
         </section>
 
-        <section>
-          <span class="text-[11px] font-semibold uppercase tracking-wider text-[#8E8E93] px-1 block mb-2">Mis Platos Guardados</span>
-          <div id="savedPresetsList" class="ios-list"></div>
+        <section class="liquid-glass p-5">
+          <h3 class="text-[14px] font-semibold text-white mb-2">Evolución Corporal</h3>
+          <div id="weightList" class="divide-y divide-white/10 text-[12px]"></div>
         </section>
-      </div>
+      </main>
 
       <!-- ==========================================
-           VISTA 4: AJUSTES (iOS SETTINGS + APPLE HEALTH)
+           PESTAÑA 3: AJUSTES & BASE DE DATOS GITHUB
            ========================================== -->
-      <div id="view-settings" class="hidden space-y-5">
+      <main id="view-settings" class="hidden space-y-4">
+
+        <!-- Control de Cristal Líquido iOS 27 -->
+        <div>
+          <span class="text-[11px] font-medium uppercase tracking-widest text-[var(--text-secondary)] px-2 block mb-1.5">Apariencia iOS 27 Liquid Glass</span>
+          <div class="liquid-glass ios27-list">
+            <div class="ios27-row">
+              <span class="text-[13px]">Opacidad del Cristal (Clear ↔ Tinted)</span>
+              <input id="glassSlider" type="range" min="0.25" max="0.85" step="0.05" value="0.58" oninput="updateGlassTint(this.value)" class="w-28" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Base de Datos en la Nube (GitHub Cloud Sync) -->
+        <div>
+          <span class="text-[11px] font-medium uppercase tracking-widest text-[var(--text-secondary)] px-2 block mb-1.5">Base de Datos en GitHub (Cloud Sync)</span>
+          <div class="liquid-glass ios27-list">
+            <div class="ios27-row">
+              <span class="text-[13px]">GitHub Token (PAT)</span>
+              <input id="cfgGhToken" type="password" placeholder="ghp_..." class="bg-transparent text-right text-[13px] text-white focus:outline-none w-44" />
+            </div>
+            <div class="ios27-row">
+              <span class="text-[13px]">Usuario / Repo</span>
+              <input id="cfgGhRepo" type="text" placeholder="usuario/nutrios" class="bg-transparent text-right text-[13px] text-white focus:outline-none w-44" />
+            </div>
+            <div class="ios27-row">
+              <div class="flex gap-2 w-full pt-1">
+                <button onclick="pullFromGitHub()" class="flex-1 liquid-pill py-2 text-[12px] font-medium text-white flex items-center justify-center gap-1.5">
+                  <i data-lucide="CloudDownload" class="w-3.5 h-3.5"></i> Descargar de GitHub
+                </button>
+                <button onclick="syncCloudDB(true)" class="flex-1 liquid-pill py-2 text-[12px] font-medium text-white flex items-center justify-center gap-1.5">
+                  <i data-lucide="CloudUpload" class="w-3.5 h-3.5"></i> Guardar en GitHub
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <!-- Integración con Apple Salud -->
         <div>
-          <span class="text-[11px] font-semibold uppercase tracking-wider text-[#8E8E93] px-3 block mb-1.5">Apple Salud (HealthKit Bridge)</span>
-          <div class="ios-list">
-            <div class="ios-row">
-              <div class="flex items-center gap-2.5">
-                <div class="w-7 h-7 rounded-lg bg-[#FF2D55] flex items-center justify-center">
-                  <i data-lucide="Heart" class="w-4 h-4 text-white fill-white"></i>
-                </div>
-                <div>
-                  <div class="text-[13px] font-medium text-white">Auto-Sync con Apple Salud</div>
-                  <div class="text-[11px] text-[#8E8E93]">Envía cada plato a Salud vía Atajos</div>
-                </div>
+          <span class="text-[11px] font-medium uppercase tracking-widest text-[var(--text-secondary)] px-2 block mb-1.5">Apple Salud (HealthKit)</span>
+          <div class="liquid-glass ios27-list">
+            <div class="ios27-row">
+              <div>
+                <div class="text-[13px] text-white">Enviar cada plato a Apple Salud</div>
+                <div class="text-[11px] text-[var(--text-secondary)]">Ejecuta el atajo NutriOS Health Sync</div>
               </div>
-              <div id="toggleHealthSync" onclick="toggleHealthAutoSync()" class="ios-switch"></div>
+              <div id="toggleHealth" onclick="toggleAutoHealth()" class="ios-toggle"></div>
             </div>
-            <div class="ios-row">
-              <span class="text-[13px] text-[#8E8E93]">Nombre del Atajo iOS</span>
-              <input id="cfgShortcutName" type="text" value="NutriOS Health Sync" class="bg-transparent text-right text-[13px] text-white focus:outline-none w-44" />
-            </div>
-            <button onclick="syncWithAppleHealth()" class="ios-row w-full text-left text-[13px] text-[#0A84FF] font-medium">
-              <span>Sincronizar totales de hoy con Apple Salud ahora</span>
-              <i data-lucide="ArrowUpRight" class="w-4 h-4"></i>
-            </button>
           </div>
         </div>
 
-        <!-- Motor IA -->
+        <!-- Motor de Inteligencia Artificial -->
         <div>
-          <span class="text-[11px] font-semibold uppercase tracking-wider text-[#8E8E93] px-3 block mb-1.5">Motor Gemini Vision</span>
-          <div class="ios-list">
-            <div class="ios-row">
-              <span class="text-[13px]">API Key</span>
-              <input id="cfgApiKey" type="password" placeholder="AIzaSy..." class="bg-transparent text-right text-[13px] text-[#0A84FF] focus:outline-none w-48" />
+          <span class="text-[11px] font-medium uppercase tracking-widest text-[var(--text-secondary)] px-2 block mb-1.5">Inteligencia Artificial</span>
+          <div class="liquid-glass ios27-list">
+            <div class="ios27-row">
+              <span class="text-[13px]">Clave API</span>
+              <input id="cfgApiKey" type="password" class="bg-transparent text-right text-[13px] text-white focus:outline-none w-48" />
             </div>
-            <div class="ios-row">
+            <div class="ios27-row">
               <span class="text-[13px]">Modelo</span>
-              <select id="cfgModel" class="bg-transparent text-[13px] text-[#8E8E93] text-right focus:outline-none">
+              <select id="cfgModel" class="bg-transparent text-[13px] text-[var(--text-secondary)] text-right focus:outline-none">
                 <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
                 <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
               </select>
             </div>
-            <div class="ios-row">
-              <span class="text-[13px]">Compensación de Aceite</span>
-              <select id="cfgOil" class="bg-transparent text-[13px] text-[#8E8E93] text-right focus:outline-none">
-                <option value="1.0">Estándar (Casero)</option>
-                <option value="1.1">Restaurante (+10% grasa)</option>
-                <option value="0.92">Plancha / Airfryer</option>
-              </select>
+          </div>
+        </div>
+
+        <!-- Objetivos Nutricionales -->
+        <div>
+          <span class="text-[11px] font-medium uppercase tracking-widest text-[var(--text-secondary)] px-2 block mb-1.5">Objetivos (Entreno / Descanso)</span>
+          <div class="liquid-glass ios27-list">
+            <div class="ios27-row"><span class="text-[13px]">Kcal Entreno / Descanso</span>
+              <div class="flex gap-2">
+                <input id="tKcal" type="number" class="w-16 bg-white/5 rounded-lg px-2 py-1 text-right text-[13px]" />
+                <input id="rKcal" type="number" class="w-16 bg-white/5 rounded-lg px-2 py-1 text-right text-[13px]" />
+              </div>
             </div>
+            <div class="ios27-row"><span class="text-[13px]">Proteína (g)</span><input id="tProt" type="number" class="w-20 bg-transparent text-right text-[13px]" /></div>
+            <div class="ios27-row"><span class="text-[13px]">Carbos Entreno / Descanso</span>
+              <div class="flex gap-2">
+                <input id="tCarb" type="number" class="w-16 bg-white/5 rounded-lg px-2 py-1 text-right text-[13px]" />
+                <input id="rCarb" type="number" class="w-16 bg-white/5 rounded-lg px-2 py-1 text-right text-[13px]" />
+              </div>
+            </div>
+            <div class="ios27-row"><span class="text-[13px]">Grasas (g)</span><input id="tFat" type="number" class="w-20 bg-transparent text-right text-[13px]" /></div>
           </div>
         </div>
 
-        <!-- Objetivos Día de Entreno y Descanso -->
-        <div>
-          <span class="text-[11px] font-semibold uppercase tracking-wider text-[#8E8E93] px-3 block mb-1.5">Objetivos Día de Entreno</span>
-          <div class="ios-list">
-            <div class="ios-row"><span class="text-[13px]">Calorías (kcal)</span><input id="tKcal" type="number" class="bg-transparent text-right text-[13px] text-white w-24 focus:outline-none" /></div>
-            <div class="ios-row"><span class="text-[13px]">Proteínas (g)</span><input id="tProt" type="number" class="bg-transparent text-right text-[13px] text-[#0A84FF] w-24 focus:outline-none" /></div>
-            <div class="ios-row"><span class="text-[13px]">Carbohidratos (g)</span><input id="tCarb" type="number" class="bg-transparent text-right text-[13px] text-[#FF9F0A] w-24 focus:outline-none" /></div>
-            <div class="ios-row"><span class="text-[13px]">Grasas (g)</span><input id="tFat" type="number" class="bg-transparent text-right text-[13px] text-[#FF453A] w-24 focus:outline-none" /></div>
-          </div>
-        </div>
+        <button onclick="saveSettings()" class="w-full bg-white text-black font-semibold py-3.5 rounded-full text-[14px] active:scale-98 transition-transform">Guardar Configuración</button>
 
-        <div>
-          <span class="text-[11px] font-semibold uppercase tracking-wider text-[#8E8E93] px-3 block mb-1.5">Objetivos Día de Descanso</span>
-          <div class="ios-list">
-            <div class="ios-row"><span class="text-[13px]">Calorías (kcal)</span><input id="rKcal" type="number" class="bg-transparent text-right text-[13px] text-white w-24 focus:outline-none" /></div>
-            <div class="ios-row"><span class="text-[13px]">Proteínas (g)</span><input id="rProt" type="number" class="bg-transparent text-right text-[13px] text-[#0A84FF] w-24 focus:outline-none" /></div>
-            <div class="ios-row"><span class="text-[13px]">Carbohidratos (g)</span><input id="rCarb" type="number" class="bg-transparent text-right text-[13px] text-[#FF9F0A] w-24 focus:outline-none" /></div>
-            <div class="ios-row"><span class="text-[13px]">Grasas (g)</span><input id="rFat" type="number" class="bg-transparent text-right text-[13px] text-[#FF453A] w-24 focus:outline-none" /></div>
-          </div>
-        </div>
-
-        <button onclick="saveSettingsForm()" class="w-full bg-[#30D158] active:opacity-80 text-black font-bold py-3 rounded-xl text-[14px]">Guardar Cambios</button>
-
-        <!-- Exportación y Datos -->
-        <div>
-          <span class="text-[11px] font-semibold uppercase tracking-wider text-[#8E8E93] px-3 block mb-1.5">Datos y Exportación</span>
-          <div class="ios-list">
-            <button onclick="copyObsidianMarkdown()" class="ios-row w-full text-left text-[13px] text-[#0A84FF]">
-              <span>Copiar resumen de hoy en Markdown (Obsidian)</span>
-              <i data-lucide="Copy" class="w-4 h-4"></i>
-            </button>
-            <button onclick="downloadBackupJSON()" class="ios-row w-full text-left text-[13px] text-[#0A84FF]">
-              <span>Exportar copia de seguridad (.json)</span>
-              <i data-lucide="Download" class="w-4 h-4"></i>
-            </button>
-            <button onclick="clearTodayMeals()" class="ios-row w-full text-left text-[13px] text-[#FF453A]">
-              <span>Borrar registro de comidas de hoy</span>
-              <i data-lucide="Trash2" class="w-4 h-4"></i>
-            </button>
-          </div>
-        </div>
-
-      </div>
+      </main>
 
     </div>
 
-    <!-- SHEET MODAL PARA DESCRIBIR PLATO CON TEXTO -->
-    <div id="textModal" class="hidden fixed inset-0 bg-black/65 z-40 flex items-end justify-center">
-      <div class="w-full max-w-[390px] bg-[#1C1C1E] rounded-t-3xl p-5 border-t border-white/10">
+    <!-- SHEET MODAL: ESCRIBIR COMIDA CON TEXTO -->
+    <div id="textModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-end justify-center">
+      <div class="w-full max-w-[390px] liquid-glass rounded-b-none rounded-t-[32px] p-5">
         <div class="flex justify-between items-center mb-3">
-          <span class="text-[15px] font-bold">Describir Comida</span>
-          <button onclick="toggleTextModal(false)" class="p-1 text-[#8E8E93]">
-            <i data-lucide="X" class="w-5 h-5"></i>
+          <span class="text-[15px] font-semibold">Describir Plato</span>
+          <button onclick="toggleModal('textModal', false)" class="liquid-pill p-1.5 text-[var(--text-secondary)]">
+            <i data-lucide="X" class="w-4 h-4"></i>
           </button>
         </div>
-        <textarea id="nlInput" rows="3" placeholder="Ej: 200g de pechuga de pollo a la plancha con 250g de arroz blanco y medio aguacate..." class="w-full bg-[#2C2C2E] rounded-xl p-3 text-[13px] text-white focus:outline-none mb-3"></textarea>
-        <button onclick="analyzeTextDescription()" class="w-full bg-[#0A84FF] text-white font-semibold py-3 rounded-xl text-[14px]">Calcular Nutrientes con IA</button>
+        <textarea id="nlPrompt" rows="3" placeholder="Ej: 200g de pechuga de pollo a la plancha con 250g de arroz blanco..." class="w-full bg-white/5 border border-white/10 rounded-2xl p-3 text-[13px] text-white focus:outline-none mb-3"></textarea>
+        <button onclick="submitTextMeal()" class="w-full bg-white text-black font-semibold py-3 rounded-full text-[13px]">Analizar y Guardar</button>
       </div>
     </div>
 
-    <!-- TAB BAR INFERIOR NATIVA iOS (390pt) -->
-    <nav class="ios-tabbar">
-      <div class="h-[54px] px-4 flex items-center justify-between">
-        <button onclick="switchView('today')" id="tabbtn-today" class="flex flex-col items-center justify-center gap-1 text-[#0A84FF] w-14">
-          <i data-lucide="LayoutDashboard" class="w-5 h-5"></i>
-          <span class="text-[10px] font-medium">Resumen</span>
-        </button>
-
-        <button onclick="switchView('analytics')" id="tabbtn-analytics" class="flex flex-col items-center justify-center gap-1 text-[#8E8E93] w-14">
-          <i data-lucide="LineChart" class="w-5 h-5"></i>
-          <span class="text-[10px] font-medium">Analítica</span>
-        </button>
-
-        <!-- Botón Central de Cámara y Fototeca -->
-        <div class="flex items-center gap-1.5 -mt-4">
-          <label class="w-12 h-12 rounded-full bg-[#0A84FF] active:scale-95 transition-transform flex items-center justify-center shadow-lg shadow-[#0A84FF]/30 cursor-pointer border-2 border-black">
-            <i data-lucide="Camera" class="w-5 h-5 text-white"></i>
-            <input type="file" accept="image/*" capture="environment" class="hidden" onchange="handleImageUpload(event)" />
-          </label>
-          <label class="w-8 h-8 rounded-full bg-[#2C2C2E] active:scale-95 transition-transform flex items-center justify-center cursor-pointer border border-white/10" title="Abrir Galería">
-            <i data-lucide="Image" class="w-4 h-4 text-[#8E8E93]"></i>
-            <input type="file" accept="image/*" class="hidden" onchange="handleImageUpload(event)" />
-          </label>
+    <!-- SHEET MODAL: CREAR ACCIÓN RÁPIDA -->
+    <div id="presetModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-end justify-center">
+      <div class="w-full max-w-[390px] liquid-glass rounded-b-none rounded-t-[32px] p-5 space-y-2.5">
+        <div class="flex justify-between items-center mb-1">
+          <span class="text-[15px] font-semibold">Nueva Acción Rápida</span>
+          <button onclick="toggleModal('presetModal', false)" class="liquid-pill p-1.5 text-[var(--text-secondary)]">
+            <i data-lucide="X" class="w-4 h-4"></i>
+          </button>
         </div>
+        <input id="pName" type="text" placeholder="Nombre (ej. Batido Desayuno)" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-[13px] text-white" />
+        <div class="grid grid-cols-2 gap-2">
+          <input id="pWeight" type="number" placeholder="Peso (g)" class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-[13px] text-white" />
+          <input id="pKcal" type="number" placeholder="Calorías (kcal)" class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-[13px] text-white" />
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <input id="pProt" type="number" placeholder="Prot (g)" class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-[13px] text-white" />
+          <input id="pCarb" type="number" placeholder="Carb (g)" class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-[13px] text-white" />
+          <input id="pFat" type="number" placeholder="Grasa (g)" class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-[13px] text-white" />
+        </div>
+        <button onclick="saveNewPreset()" class="w-full bg-white text-black font-semibold py-3 rounded-full text-[13px] mt-1">Añadir a Inicio</button>
+      </div>
+    </div>
 
-        <button onclick="switchView('favorites')" id="tabbtn-favorites" class="flex flex-col items-center justify-center gap-1 text-[#8E8E93] w-14">
-          <i data-lucide="Bookmark" class="w-5 h-5"></i>
-          <span class="text-[10px] font-medium">Favoritos</span>
+    <!-- CÁPSULA FLOTANTE LIQUID GLASS iOS 27 (BARRA INFERIOR) -->
+    <div class="ios27-tabbar-wrap">
+      <nav id="floatingTabbar" class="ios27-tabbar">
+        <button onclick="switchTab('today')" id="nav-today" class="tab-item active">
+          <i data-lucide="CircleDot" class="w-[18px] h-[18px]"></i>
+          <span class="text-[10px] font-medium">Hoy</span>
         </button>
 
-        <button onclick="switchView('settings')" id="tabbtn-settings" class="flex flex-col items-center justify-center gap-1 text-[#8E8E93] w-14">
-          <i data-lucide="SlidersHorizontal" class="w-5 h-5"></i>
+        <!-- Botón de Cámara Prominente en el Centro -->
+        <label class="camera-prominent" title="Fotografiar Comida">
+          <i data-lucide="Camera" class="w-5 h-5"></i>
+          <input type="file" accept="image/*" capture="environment" class="hidden" onchange="handlePhoto(event)" />
+        </label>
+
+        <button onclick="switchTab('analytics')" id="nav-analytics" class="tab-item">
+          <i data-lucide="BarChart2" class="w-[18px] h-[18px]"></i>
+          <span class="text-[10px] font-medium">Historial</span>
+        </button>
+
+        <button onclick="switchTab('settings')" id="nav-settings" class="tab-item">
+          <i data-lucide="SlidersHorizontal" class="w-[18px] h-[18px]"></i>
           <span class="text-[10px] font-medium">Ajustes</span>
         </button>
-      </div>
-    </nav>
+      </nav>
+    </div>
+
   </div>
 
   <script>
+    // Clave API preconfigurada por defecto para que funcione nada más abrir
+    const DEFAULT_API_KEY = "AQ.Ab8RN6L0-ZdixXqTBolg3miIH5DsFRkCI_lIxCB2XHucKldJcA";
     const todayKey = new Date().toISOString().split('T')[0];
-    document.getElementById('dateHeader').textContent = new Date().toLocaleDateString('es-ES', {
-      weekday: 'long', day: 'numeric', month: 'long'
+
+    document.getElementById('lblDate').textContent = new Date().toLocaleDateString('es-ES', {
+      weekday: 'long', day: 'numeric', month: 'short'
     });
 
-    const defaultCfg = {
-      dayType: 'train',
-      model: 'gemini-2.5-flash',
-      oilFactor: 1.0,
-      autoHealthSync: false,
-      shortcutName: 'NutriOS Health Sync',
-      train: { kcal: 2950, prot: 170, carb: 365, fat: 88 },
-      rest:  { kcal: 2550, prot: 170, carb: 275, fat: 82 }
+    // Efecto dinámico de iOS 27: la barra flotante se encoge al hacer scroll hacia abajo
+    let lastScrollY = 0;
+    document.getElementById('scrollStage').addEventListener('scroll', (e) => {
+      const currentY = e.target.scrollTop;
+      const bar = document.getElementById('floatingTabbar');
+      if (currentY > lastScrollY + 12 && currentY > 40) {
+        bar.classList.add('minimized');
+      } else if (currentY < lastScrollY - 8 || currentY <= 20) {
+        bar.classList.remove('minimized');
+      }
+      lastScrollY = currentY;
+    });
+
+    const defaultState = {
+      cfg: {
+        mode: 'train',
+        model: 'gemini-2.5-flash',
+        glassOpacity: 0.58,
+        autoHealth: false,
+        ghToken: '',
+        ghRepo: '',
+        train: { kcal: 2950, prot: 170, carb: 365, fat: 88 },
+        rest:  { kcal: 2550, prot: 170, carb: 275, fat: 82 }
+      },
+      presets: [
+        {
+          id: 'shake_default',
+          icon: 'CupSoda',
+          name: 'Batido Desayuno',
+          weight: 550,
+          kcal: 780,
+          prot: 34,
+          carb: 96,
+          fat: 28,
+          fiber: 8,
+          items: ['Leche', 'Avena', 'Crema de cacahuete', 'Plátano']
+        },
+        {
+          id: 'chicken_rice',
+          icon: 'Utensils',
+          name: 'Pollo y Arroz',
+          weight: 420,
+          kcal: 610,
+          prot: 52,
+          carb: 78,
+          fat: 9,
+          fiber: 2,
+          items: ['200g pechuga', '220g arroz']
+        }
+      ],
+      days: {}
     };
 
-    const defaultPresets = [
-      { id: 'p1', icon: 'CupSoda', name: 'Batido Hipercalórico', weight: 550, kcal: 780, prot: 34, carb: 96, fat: 28, fiber: 8, items: ['300ml leche', '80g avena', '30g crema cacahuete', '1 plátano'] },
-      { id: 'p2', icon: 'Beef', name: 'Pollo y Arroz', weight: 420, kcal: 610, prot: 52, carb: 78, fat: 9, fiber: 2, items: ['200g pechuga pollo', '220g arroz cocido'] },
-      { id: 'p3', icon: 'Egg', name: '4 Huevos + Tostadas', weight: 310, kcal: 490, prot: 31, carb: 34, fat: 25, fiber: 3, items: ['4 huevos L', '2 rebanadas pan', 'AOVE'] },
-      { id: 'p4', icon: 'Fish', name: 'Atún con Pasta', weight: 400, kcal: 580, prot: 42, carb: 76, fat: 11, fiber: 4, items: ['2 latas atún', '220g pasta', 'Tomate'] }
-    ];
-
-    function getCfg() {
-      return { ...defaultCfg, ...(JSON.parse(localStorage.getItem('nutrios_pro_cfg')) || {}) };
-    }
-    function saveCfg(cfg) {
-      localStorage.setItem('nutrios_pro_cfg', JSON.stringify(cfg));
-      renderUI();
-    }
-
-    function getAllDays() {
-      return JSON.parse(localStorage.getItem('nutrios_pro_days') || '{}');
-    }
-    function getToday() {
-      const all = getAllDays();
-      if (!all[todayKey]) {
-        all[todayKey] = { meals: [], water: 0, weight: null };
-        localStorage.setItem('nutrios_pro_days', JSON.stringify(all));
+    function getStore() {
+      const raw = localStorage.getItem('nutrios27_store');
+      if (!raw) {
+        localStorage.setItem('nutrios27_store', JSON.stringify(defaultState));
+        return defaultState;
       }
-      return all[todayKey];
-    }
-    function saveToday(data) {
-      const all = getAllDays();
-      all[todayKey] = data;
-      localStorage.setItem('nutrios_pro_days', JSON.stringify(all));
-      renderUI();
-    }
-
-    function getPresets() {
-      return JSON.parse(localStorage.getItem('nutrios_pro_presets')) || defaultPresets;
-    }
-    function savePresets(list) {
-      localStorage.setItem('nutrios_pro_presets', JSON.stringify(list));
-      renderUI();
+      const parsed = JSON.parse(raw);
+      return {
+        cfg: { ...defaultState.cfg, ...(parsed.cfg || {}) },
+        presets: parsed.presets || defaultState.presets,
+        days: parsed.days || {}
+      };
     }
 
-    // Navegación entre vistas
-    function switchView(view) {
-      ['today', 'analytics', 'favorites', 'settings'].forEach(v => {
-        document.getElementById(`view-${v}`).classList.toggle('hidden', v !== view);
-        const btn = document.getElementById(`tabbtn-${v}`);
-        if (btn) btn.className = `flex flex-col items-center justify-center gap-1 w-14 ${v === view ? 'text-[#0A84FF]' : 'text-[#8E8E93]'}`;
+    function saveStore(store, pushToCloud = true) {
+      localStorage.setItem('nutrios27_store', JSON.stringify(store));
+      render();
+      if (pushToCloud && store.cfg.ghToken && store.cfg.ghRepo) {
+        syncCloudDB(false);
+      }
+    }
+
+    function getApiKey() {
+      return localStorage.getItem('nutrios27_apikey') || DEFAULT_API_KEY;
+    }
+
+    function getTodayObj(store) {
+      if (!store.days[todayKey]) {
+        store.days[todayKey] = { meals: [], water: 0, weight: null };
+      }
+      return store.days[todayKey];
+    }
+
+    // Slider de Liquid Glass de iOS 27
+    function updateGlassTint(val) {
+      document.documentElement.style.setProperty('--glass-opacity', val);
+      const store = getStore();
+      store.cfg.glassOpacity = parseFloat(val);
+      saveStore(store, false);
+    }
+
+    function switchTab(tab) {
+      ['today', 'analytics', 'settings'].forEach(t => {
+        document.getElementById(`view-${t}`).classList.toggle('hidden', t !== tab);
+        document.getElementById(`nav-${t}`).classList.toggle('active', t === tab);
       });
-      const titles = { today: 'Resumen', analytics: 'Analítica', favorites: 'Favoritos', settings: 'Ajustes' };
-      document.getElementById('viewTitle').textContent = titles[view];
-      if (view === 'settings') loadSettingsForm();
-      if (view === 'analytics') renderAnalyticsView();
+      const titles = { today: 'Hoy', analytics: 'Historial', settings: 'Ajustes' };
+      document.getElementById('lblTitle').textContent = titles[tab];
+      if (tab === 'settings') populateSettings();
+      if (tab === 'analytics') renderAnalytics();
       lucide.createIcons();
     }
 
-    function setDayType(type) {
-      const cfg = getCfg();
-      cfg.dayType = type;
-      saveCfg(cfg);
+    function setMode(mode) {
+      const store = getStore();
+      store.cfg.mode = mode;
+      saveStore(store);
     }
 
-    // Puente con Apple Salud mediante URL Scheme oficial de Atajos de iOS
-    function syncWithAppleHealth(customPayload = null) {
-      const cfg = getCfg();
-      const today = getToday();
+    function toggleModal(id, show) {
+      document.getElementById(id).classList.toggle('hidden', !show);
+    }
 
-      let kcal = 0, prot = 0, carb = 0, fat = 0, fiber = 0;
-      today.meals.forEach(m => {
-        kcal  += Math.round(m.baseKcal * m.scale);
-        prot  += Math.round(m.baseProt * m.scale);
-        carb  += Math.round(m.baseCarb * m.scale);
-        fat   += Math.round(m.baseFat * m.scale);
-        fiber += Math.round((m.baseFiber || 0) * m.scale);
+    function openPresetCreator() {
+      toggleModal('presetModal', true);
+    }
+
+    function saveNewPreset() {
+      const name = document.getElementById('pName').value.trim();
+      if (!name) return;
+      const store = getStore();
+      store.presets.push({
+        id: 'p_' + Date.now(),
+        icon: 'Utensils',
+        name,
+        weight: Number(document.getElementById('pWeight').value) || 350,
+        kcal: Number(document.getElementById('pKcal').value) || 500,
+        prot: Number(document.getElementById('pProt').value) || 35,
+        carb: Number(document.getElementById('pCarb').value) || 50,
+        fat: Number(document.getElementById('pFat').value) || 15,
+        fiber: 4,
+        items: ['Acción rápida']
       });
+      ['pName','pWeight','pKcal','pProt','pCarb','pFat'].forEach(i => document.getElementById(i).value = '');
+      toggleModal('presetModal', false);
+      saveStore(store);
+    }
 
-      const payload = customPayload || {
-        date: todayKey,
-        calories: kcal,
-        protein: prot,
-        carbs: carb,
-        fat: fat,
-        fiber: fiber,
-        waterLiters: today.water,
-        weightKg: today.weight || ''
+    // Registrar Batido o Acción Rápida en 1 Toque (Guarda en Cloud DB + Salud)
+    function triggerQuickPreset(id) {
+      const store = getStore();
+      const preset = store.presets.find(p => p.id === id);
+      if (!preset) return;
+      const today = getTodayObj(store);
+
+      const entry = {
+        id: Date.now(),
+        name: preset.name,
+        time: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+        scale: 1,
+        baseWeight: preset.weight,
+        baseKcal: preset.kcal,
+        baseProt: preset.prot,
+        baseCarb: preset.carb,
+        baseFat: preset.fat,
+        baseFiber: preset.fiber || 4,
+        items: preset.items || []
       };
 
-      const shortcutName = encodeURIComponent(cfg.shortcutName || 'NutriOS Health Sync');
-      const encodedInput = encodeURIComponent(JSON.stringify(payload));
-      window.location.href = `shortcuts://run-shortcut?name=${shortcutName}&input=text&text=${encodedInput}`;
+      today.meals.unshift(entry);
+      saveStore(store);
+
+      if (store.cfg.autoHealth) {
+        syncAppleHealth(entry);
+      }
     }
 
-    function addWater(amount) {
-      const today = getToday();
-      today.water = Math.max(0, +(today.water + amount).toFixed(2));
-      saveToday(today);
+    function addWater(liters) {
+      const store = getStore();
+      const today = getTodayObj(store);
+      today.water = Math.max(0, +(today.water + liters).toFixed(2));
+      saveStore(store);
     }
 
     function saveWeight() {
       const val = parseFloat(document.getElementById('inpWeight').value);
       if (!val) return;
-      const today = getToday();
+      const store = getStore();
+      const today = getTodayObj(store);
       today.weight = val;
       document.getElementById('inpWeight').value = '';
-      saveToday(today);
-      if (getCfg().autoHealthSync) syncWithAppleHealth({ weightKg: val });
+      saveStore(store);
     }
 
-    function logPreset(id) {
-      const p = getPresets().find(x => x.id === id);
-      if (!p) return;
-      const today = getToday();
-      const newMeal = {
-        id: Date.now(),
-        icon: p.icon || 'Utensils',
-        name: p.name,
-        time: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
-        scale: 1,
-        baseWeight: p.weight,
-        baseKcal: p.kcal,
-        baseProt: p.prot,
-        baseCarb: p.carb,
-        baseFat: p.fat,
-        baseFiber: p.fiber || 3,
-        items: p.items || []
-      };
-      today.meals.unshift(newMeal);
-      saveToday(today);
-      if (getCfg().autoHealthSync) {
-        syncWithAppleHealth({ calories: p.kcal, protein: p.prot, carbs: p.carb, fat: p.fat, fiber: p.fiber || 3 });
-      }
-    }
-
-    function addNewPreset() {
-      const name = document.getElementById('favName').value.trim();
-      if (!name) return;
-      const list = getPresets();
-      list.unshift({
-        id: 'fav_' + Date.now(),
-        icon: document.getElementById('favIcon').value,
-        name,
-        weight: Number(document.getElementById('favWeight').value) || 350,
-        kcal: Number(document.getElementById('favKcal').value) || 500,
-        prot: Number(document.getElementById('favProt').value) || 35,
-        carb: Number(document.getElementById('favCarb').value) || 55,
-        fat: Number(document.getElementById('favFat').value) || 15,
-        fiber: 4,
-        items: ['Plato favorito']
-      });
-      savePresets(list);
-      ['favName', 'favWeight', 'favKcal', 'favProt', 'favCarb', 'favFat'].forEach(id => document.getElementById(id).value = '');
-    }
-
-    function deletePreset(id) {
-      savePresets(getPresets().filter(p => p.id !== id));
-    }
-
-    function updateScale(mealId, val) {
-      const today = getToday();
-      today.meals = today.meals.map(m => m.id === mealId ? { ...m, scale: parseFloat(val) } : m);
-      saveToday(today);
+    function updateMealScale(mealId, scale) {
+      const store = getStore();
+      const today = getTodayObj(store);
+      today.meals = today.meals.map(m => m.id === mealId ? { ...m, scale: parseFloat(scale) } : m);
+      saveStore(store);
     }
 
     function deleteMeal(mealId) {
-      const today = getToday();
+      const store = getStore();
+      const today = getTodayObj(store);
       today.meals = today.meals.filter(m => m.id !== mealId);
-      saveToday(today);
+      saveStore(store);
     }
 
-    function saveMealToFavorites(mealId) {
-      const m = getToday().meals.find(x => x.id === mealId);
-      if (!m) return;
-      const list = getPresets();
-      list.unshift({
-        id: 'fav_' + Date.now(),
-        icon: 'Utensils',
-        name: m.name,
-        weight: Math.round(m.baseWeight * m.scale),
-        kcal: Math.round(m.baseKcal * m.scale),
-        prot: Math.round(m.baseProt * m.scale),
-        carb: Math.round(m.baseCarb * m.scale),
-        fat: Math.round(m.baseFat * m.scale),
-        fiber: Math.round((m.baseFiber || 3) * m.scale),
-        items: m.items || []
-      });
-      savePresets(list);
+    // BASE DE DATOS EN GITHUB (Guarda y lee el archivo nutrios-db.json en tu propio repositorio)
+    async function syncCloudDB(manualNotify = false) {
+      const store = getStore();
+      const { ghToken, ghRepo } = store.cfg;
+      const dot = document.getElementById('cloudStatusDot');
+      const btnTxt = document.getElementById('cloudBtnText');
+
+      if (!ghToken || !ghRepo) {
+        if (manualNotify) {
+          switchTab('settings');
+          alert('Configura tu GitHub Token y el nombre de tu repositorio (usuario/repo) en Ajustes para activar la base de datos en la nube.');
+        }
+        return;
+      }
+
+      try {
+        dot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse';
+        btnTxt.textContent = 'Sincronizando...';
+
+        const apiUrl = `https://api.github.com/repos/${ghRepo}/contents/nutrios-db.json`;
+        const headers = {
+          'Authorization': `Bearer ${ghToken}`,
+          'Accept': 'application/vnd.github+json'
+        };
+
+        // 1. Comprobar si ya existe el archivo para obtener su SHA
+        let sha = null;
+        const getRes = await fetch(apiUrl, { headers });
+        if (getRes.ok) {
+          const existing = await getRes.json();
+          sha = existing.sha;
+        }
+
+        // 2. Codificar la base de datos completa en Base64 UTF-8
+        const payloadObj = {
+          updatedAt: new Date().toISOString(),
+          presets: store.presets,
+          days: store.days
+        };
+        const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(payloadObj, null, 2))));
+
+        const putRes = await fetch(apiUrl, {
+          method: 'PUT',
+          headers: { ...headers, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: `Sync NutriOS DB ${todayKey}`,
+            content: contentBase64,
+            ...(sha ? { sha } : {})
+          })
+        });
+
+        if (putRes.ok) {
+          dot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400';
+          btnTxt.textContent = 'GitHub OK';
+          if (manualNotify) alert('Base de datos guardada en tu repositorio de GitHub correctamente.');
+        } else {
+          throw new Error('GitHub API error');
+        }
+      } catch (err) {
+        dot.className = 'w-1.5 h-1.5 rounded-full bg-rose-400';
+        btnTxt.textContent = 'Error Cloud';
+        if (manualNotify) alert('Error al sincronizar con GitHub. Revisa el Token y que el repositorio exista.');
+      }
     }
 
-    function toggleTextModal(show) {
-      document.getElementById('textModal').classList.toggle('hidden', !show);
+    async function pullFromGitHub() {
+      const store = getStore();
+      const { ghToken, ghRepo } = store.cfg;
+      if (!ghToken || !ghRepo) {
+        alert('Introduce primero tu GitHub Token y usuario/repo.');
+        return;
+      }
+
+      try {
+        const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/nutrios-db.json`, {
+          headers: { 'Authorization': `Bearer ${ghToken}`, 'Accept': 'application/vnd.github+json' }
+        });
+        if (!res.ok) throw new Error('No encontrado');
+        const data = await res.json();
+        const decoded = JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g, '')))));
+
+        if (decoded.days) store.days = { ...store.days, ...decoded.days };
+        if (decoded.presets) store.presets = decoded.presets;
+        saveStore(store, false);
+        alert('Datos restaurados desde GitHub correctamente.');
+      } catch (e) {
+        alert('No se encontró nutrios-db.json en el repositorio o el Token no tiene permisos.');
+      }
     }
 
-    // Compresión de imagen rápida para iPhone 13
+    // Puente con Apple Salud (Atajos de iOS)
+    function syncAppleHealth(singleEntry = null) {
+      const store = getStore();
+      const today = getTodayObj(store);
+
+      let payload;
+      if (singleEntry) {
+        payload = {
+          date: todayKey,
+          calories: Math.round(singleEntry.baseKcal * singleEntry.scale),
+          protein: Math.round(singleEntry.baseProt * singleEntry.scale),
+          carbs: Math.round(singleEntry.baseCarb * singleEntry.scale),
+          fat: Math.round(singleEntry.baseFat * singleEntry.scale),
+          fiber: Math.round((singleEntry.baseFiber || 0) * singleEntry.scale),
+          waterLiters: today.water,
+          weightKg: today.weight || ''
+        };
+      } else {
+        let kcal = 0, prot = 0, carb = 0, fat = 0, fiber = 0;
+        today.meals.forEach(m => {
+          kcal  += Math.round(m.baseKcal * m.scale);
+          prot  += Math.round(m.baseProt * m.scale);
+          carb  += Math.round(m.baseCarb * m.scale);
+          fat   += Math.round(m.baseFat * m.scale);
+          fiber += Math.round((m.baseFiber || 0) * m.scale);
+        });
+        payload = { date: todayKey, calories: kcal, protein: prot, carbs: carb, fat, fiber, waterLiters: today.water, weightKg: today.weight || '' };
+      }
+
+      const encoded = encodeURIComponent(JSON.stringify(payload));
+      window.location.href = `shortcuts://run-shortcut?name=${encodeURIComponent('NutriOS Health Sync')}&input=text&text=${encoded}`;
+    }
+
+    // Compresión de fotografía e inferencia con IA
     function compressImage(file, maxW = 960) {
       return new Promise((resolve) => {
         const reader = new FileReader();
@@ -861,16 +1010,10 @@
       });
     }
 
-    async function callGemini(parts, thumb = null) {
-      const apiKey = localStorage.getItem('nutrios_pro_apikey');
-      if (!apiKey) {
-        switchView('settings');
-        alert('Introduce primero tu Gemini API Key en Ajustes.');
-        return;
-      }
-
-      const cfg = getCfg();
-      document.getElementById('aiStatusCard').classList.remove('hidden');
+    async function analyzeWithGemini(parts, thumb = null) {
+      const apiKey = getApiKey();
+      const store = getStore();
+      document.getElementById('aiLoader').classList.remove('hidden');
 
       const schema = {
         type: "OBJECT",
@@ -888,7 +1031,7 @@
       };
 
       try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${cfg.model}:generateContent?key=${apiKey}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${store.cfg.model}:generateContent?key=${apiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -901,156 +1044,118 @@
           })
         });
 
-        const resJson = await response.json();
-        const data = JSON.parse(resJson.candidates[0].content.parts[0].text);
+        const json = await res.json();
+        if (!json.candidates || !json.candidates[0]) {
+          throw new Error(json.error?.message || 'Respuesta inválida del modelo');
+        }
+        const data = JSON.parse(json.candidates[0].content.parts[0].text);
 
-        const oilFactor = parseFloat(cfg.oilFactor || 1.0);
-        const finalFat = Math.round(data.fatGrams * oilFactor);
-        const finalKcal = Math.round(data.calories + (finalFat - data.fatGrams) * 9);
-
-        const today = getToday();
-        today.meals.unshift({
+        const today = getTodayObj(store);
+        const newMeal = {
           id: Date.now(),
-          icon: 'Utensils',
           name: data.dishName,
           time: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
           scale: 1,
           thumb,
           baseWeight: data.totalWeightGrams,
-          baseKcal: finalKcal,
+          baseKcal: data.calories,
           baseProt: data.proteinGrams,
           baseCarb: data.carbsGrams,
-          baseFat: finalFat,
+          baseFat: data.fatGrams,
           baseFiber: data.fiberGrams,
           items: data.ingredients
-        });
-        saveToday(today);
+        };
 
-        if (cfg.autoHealthSync) {
-          syncWithAppleHealth({
-            calories: finalKcal,
-            protein: data.proteinGrams,
-            carbs: data.carbsGrams,
-            fat: finalFat,
-            fiber: data.fiberGrams
-          });
+        today.meals.unshift(newMeal);
+        saveStore(store); // Guarda en local y sube automáticamente a GitHub Cloud DB
+
+        if (store.cfg.autoHealth) {
+          syncAppleHealth(newMeal);
         }
       } catch (err) {
-        alert('Error al conectar con Gemini API. Comprueba tu clave en Ajustes.');
-        console.error(err);
+        alert('No se pudo procesar con la clave API actual (' + err.message + '). Verifica que sea una clave de Google AI Studio en Ajustes.');
       } finally {
-        document.getElementById('aiStatusCard').classList.add('hidden');
+        document.getElementById('aiLoader').classList.add('hidden');
       }
     }
 
-    async function handleImageUpload(e) {
-      const file = e.target.files[0];
+    async function handlePhoto(event) {
+      const file = event.target.files[0];
       if (!file) return;
-      switchView('today');
+      switchTab('today');
       const { base64, thumb } = await compressImage(file);
-      await callGemini([
-        { text: "Actúa como nutricionista clínico. Analiza este plato, estima el peso en gramos de cada componente usando referencias espaciales del plato y calcula calorías, proteínas, carbohidratos, grasas y fibra en español." },
+      await analyzeWithGemini([
+        { text: "Actúa como nutricionista deportivo. Analiza la foto del plato, estima el peso en gramos de cada alimento y devuelve calorías, proteínas, carbohidratos, grasas y fibra en español." },
         { inlineData: { mimeType: "image/jpeg", data: base64 } }
       ], thumb);
-      e.target.value = '';
+      event.target.value = '';
     }
 
-    async function analyzeTextDescription() {
-      const text = document.getElementById('nlInput').value.trim();
-      if (!text) return;
-      document.getElementById('nlInput').value = '';
-      toggleTextModal(false);
-      await callGemini([
-        { text: `Calcula peso total en gramos, calorías y macronutrientes para esta comida en español: "${text}"` }
+    async function submitTextMeal() {
+      const txt = document.getElementById('nlPrompt').value.trim();
+      if (!txt) return;
+      document.getElementById('nlPrompt').value = '';
+      toggleModal('textModal', false);
+      await analyzeWithGemini([
+        { text: `Calcula peso total en gramos, calorías y macronutrientes para esta comida en español: "${txt}"` }
       ]);
     }
 
-    // Ajustes
-    function toggleHealthAutoSync() {
-      const cfg = getCfg();
-      cfg.autoHealthSync = !cfg.autoHealthSync;
-      saveCfg(cfg);
-      loadSettingsForm();
+    function toggleAutoHealth() {
+      const store = getStore();
+      store.cfg.autoHealth = !store.cfg.autoHealth;
+      saveStore(store, false);
+      populateSettings();
     }
 
-    function loadSettingsForm() {
-      const cfg = getCfg();
-      document.getElementById('cfgApiKey').value = localStorage.getItem('nutrios_pro_apikey') || '';
-      document.getElementById('cfgModel').value = cfg.model;
-      document.getElementById('cfgOil').value = String(cfg.oilFactor);
-      document.getElementById('cfgShortcutName').value = cfg.shortcutName;
-      document.getElementById('toggleHealthSync').classList.toggle('on', !!cfg.autoHealthSync);
+    function populateSettings() {
+      const store = getStore();
+      document.getElementById('glassSlider').value = store.cfg.glassOpacity || 0.58;
+      document.getElementById('cfgGhToken').value = store.cfg.ghToken || '';
+      document.getElementById('cfgGhRepo').value = store.cfg.ghRepo || '';
+      document.getElementById('cfgApiKey').value = getApiKey();
+      document.getElementById('cfgModel').value = store.cfg.model;
+      document.getElementById('toggleHealth').classList.toggle('on', !!store.cfg.autoHealth);
 
-      document.getElementById('tKcal').value = cfg.train.kcal;
-      document.getElementById('tProt').value = cfg.train.prot;
-      document.getElementById('tCarb').value = cfg.train.carb;
-      document.getElementById('tFat').value  = cfg.train.fat;
-
-      document.getElementById('rKcal').value = cfg.rest.kcal;
-      document.getElementById('rProt').value = cfg.rest.prot;
-      document.getElementById('rCarb').value = cfg.rest.carb;
-      document.getElementById('rFat').value  = cfg.rest.fat;
+      document.getElementById('tKcal').value = store.cfg.train.kcal;
+      document.getElementById('rKcal').value = store.cfg.rest.kcal;
+      document.getElementById('tProt').value = store.cfg.train.prot;
+      document.getElementById('tCarb').value = store.cfg.train.carb;
+      document.getElementById('rCarb').value = store.cfg.rest.carb;
+      document.getElementById('tFat').value  = store.cfg.train.fat;
     }
 
-    function saveSettingsForm() {
-      const k = document.getElementById('cfgApiKey').value.trim();
-      if (k) localStorage.setItem('nutrios_pro_apikey', k);
+    function saveSettings() {
+      const store = getStore();
+      const key = document.getElementById('cfgApiKey').value.trim();
+      if (key) localStorage.setItem('nutrios27_apikey', key);
 
-      const cfg = getCfg();
-      cfg.model = document.getElementById('cfgModel').value;
-      cfg.oilFactor = parseFloat(document.getElementById('cfgOil').value);
-      cfg.shortcutName = document.getElementById('cfgShortcutName').value.trim() || 'NutriOS Health Sync';
-      cfg.train = {
+      store.cfg.ghToken = document.getElementById('cfgGhToken').value.trim();
+      store.cfg.ghRepo  = document.getElementById('cfgGhRepo').value.trim();
+      store.cfg.model   = document.getElementById('cfgModel').value;
+
+      const prot = Number(document.getElementById('tProt').value) || 170;
+      const fat  = Number(document.getElementById('tFat').value) || 88;
+      store.cfg.train = {
         kcal: Number(document.getElementById('tKcal').value) || 2950,
-        prot: Number(document.getElementById('tProt').value) || 170,
+        prot,
         carb: Number(document.getElementById('tCarb').value) || 365,
-        fat:  Number(document.getElementById('tFat').value)  || 88
+        fat
       };
-      cfg.rest = {
+      store.cfg.rest = {
         kcal: Number(document.getElementById('rKcal').value) || 2550,
-        prot: Number(document.getElementById('rProt').value) || 170,
+        prot,
         carb: Number(document.getElementById('rCarb').value) || 275,
-        fat:  Number(document.getElementById('rFat').value)  || 82
+        fat
       };
-      saveCfg(cfg);
-      switchView('today');
+
+      saveStore(store);
+      switchTab('today');
     }
 
-    function copyObsidianMarkdown() {
-      const today = getToday();
-      const lines = [
-        `# Nutrición (${todayKey})`,
-        `- **Agua:** ${today.water} L`,
-        `- **Peso:** ${today.weight || '--'} kg`,
-        `\n## Comidas Registradas`
-      ];
-      today.meals.forEach(m => {
-        lines.push(`- **${m.time} ${m.name}** (${Math.round(m.baseWeight*m.scale)}g): ${Math.round(m.baseKcal*m.scale)} kcal | P: ${Math.round(m.baseProt*m.scale)}g | C: ${Math.round(m.baseCarb*m.scale)}g | G: ${Math.round(m.baseFat*m.scale)}g`);
-      });
-      navigator.clipboard.writeText(lines.join('\n'));
-      alert('Copiado en formato Markdown para Obsidian.');
-    }
-
-    function downloadBackupJSON() {
-      const blob = new Blob([JSON.stringify({ cfg: getCfg(), presets: getPresets(), days: getAllDays() }, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `nutrios-backup-${todayKey}.json`;
-      a.click();
-    }
-
-    function clearTodayMeals() {
-      if (confirm('¿Borrar las comidas de hoy?')) {
-        const t = getToday();
-        t.meals = [];
-        saveToday(t);
-      }
-    }
-
-    function renderAnalyticsView() {
-      const all = getAllDays();
-      const cfg = getCfg();
-      const goalKcal = cfg[cfg.dayType].kcal;
+    function renderAnalytics() {
+      const store = getStore();
+      const targetKcal = store.cfg[store.cfg.mode].kcal;
 
       const days7 = [];
       for (let i = 6; i >= 0; i--) {
@@ -1058,45 +1163,50 @@
         d.setDate(d.getDate() - i);
         const k = d.toISOString().split('T')[0];
         const lbl = d.toLocaleDateString('es-ES', { weekday: 'short' }).slice(0, 2).toUpperCase();
-        const item = all[k] || { meals: [], weight: null };
-        const kcal = item.meals.reduce((s, m) => s + Math.round(m.baseKcal * m.scale), 0);
-        const prot = item.meals.reduce((s, m) => s + Math.round(m.baseProt * m.scale), 0);
-        days7.push({ k, lbl, kcal, prot, weight: item.weight });
+        const dayObj = store.days[k] || { meals: [], weight: null };
+        const kcal = dayObj.meals.reduce((a, m) => a + Math.round(m.baseKcal * m.scale), 0);
+        const prot = dayObj.meals.reduce((a, m) => a + Math.round(m.baseProt * m.scale), 0);
+        days7.push({ k, lbl, kcal, prot });
       }
 
       const active = days7.filter(d => d.kcal > 0);
-      document.getElementById('statAvgKcal').textContent = `${active.length ? Math.round(active.reduce((a,b)=>a+b.kcal,0)/active.length) : 0} kcal`;
-      document.getElementById('statAvgProt').textContent = `${active.length ? Math.round(active.reduce((a,b)=>a+b.prot,0)/active.length) : 0} g`;
-      document.getElementById('statAdherence').textContent = `${Math.round((active.length / 7) * 100)}%`;
+      document.getElementById('avgKcal7d').textContent = `${active.length ? Math.round(active.reduce((a,b)=>a+b.kcal,0)/active.length) : 0} kcal`;
+      document.getElementById('avgProt7d').textContent = `${active.length ? Math.round(active.reduce((a,b)=>a+b.prot,0)/active.length) : 0} g`;
+      document.getElementById('activeDays7d').textContent = `${active.length} / 7`;
 
-      const maxVal = Math.max(goalKcal * 1.15, ...days7.map(d => d.kcal), 1000);
-      document.getElementById('chart7Days').innerHTML = days7.map(d => {
+      const maxVal = Math.max(targetKcal * 1.15, ...days7.map(d => d.kcal), 1000);
+      document.getElementById('chartBars').innerHTML = days7.map(d => {
         const h = Math.min(100, Math.round((d.kcal / maxVal) * 100));
-        const col = d.kcal > goalKcal * 1.08 ? 'bg-[#FF9F0A]' : 'bg-[#30D158]';
         return `
           <div class="flex-1 flex flex-col items-center h-full justify-end">
-            <span class="text-[9px] text-[#8E8E93] mb-1">${d.kcal || ''}</span>
-            <div class="w-full max-w-[22px] bg-[#2C2C2E] rounded-t-md h-24 flex items-end overflow-hidden">
-              <div class="${col} w-full rounded-t-md transition-all duration-500" style="height:${h}%"></div>
+            <span class="text-[9px] text-[var(--text-secondary)] mb-1">${d.kcal || ''}</span>
+            <div class="w-full max-w-[20px] bg-white/10 rounded-full h-24 flex items-end overflow-hidden p-0.5">
+              <div class="bg-white w-full rounded-full transition-all duration-500" style="height:${h}%"></div>
             </div>
-            <span class="text-[10px] font-semibold text-[#8E8E93] mt-1.5">${d.lbl}</span>
+            <span class="text-[10px] font-medium text-[var(--text-secondary)] mt-1.5">${d.lbl}</span>
           </div>
         `;
       }).join('');
 
-      const weights = Object.entries(all).filter(([,v]) => v.weight).sort(([a],[b]) => b.localeCompare(a)).slice(0, 7);
-      document.getElementById('weightHistoryBox').innerHTML = weights.length
-        ? weights.map(([dt, obj]) => `<div class="py-2 flex justify-between"><span>${dt}</span><strong class="text-[#BF5AF2]">${obj.weight} kg</strong></div>`).join('')
-        : `<p class="text-[#8E8E93] py-2">Sin registros de peso todavía.</p>`;
+      const weights = Object.entries(store.days)
+        .filter(([,v]) => v.weight)
+        .sort(([a],[b]) => b.localeCompare(a))
+        .slice(0, 7);
+
+      document.getElementById('weightList').innerHTML = weights.length
+        ? weights.map(([dt, obj]) => `<div class="py-2.5 flex justify-between"><span>${dt}</span><strong class="text-white">${obj.weight} kg</strong></div>`).join('')
+        : `<p class="text-[var(--text-secondary)] py-2">Sin registros de peso todavía.</p>`;
     }
 
-    function renderUI() {
-      const cfg = getCfg();
-      const goals = cfg[cfg.dayType];
-      const today = getToday();
+    function render() {
+      const store = getStore();
+      document.documentElement.style.setProperty('--glass-opacity', store.cfg.glassOpacity || 0.58);
 
-      document.getElementById('segTrain').classList.toggle('active', cfg.dayType === 'train');
-      document.getElementById('segRest').classList.toggle('active', cfg.dayType === 'rest');
+      const goals = store.cfg[store.cfg.mode];
+      const today = getTodayObj(store);
+
+      document.getElementById('btnTrain').classList.toggle('active', store.cfg.mode === 'train');
+      document.getElementById('btnRest').classList.toggle('active', store.cfg.mode === 'rest');
 
       let kcal = 0, prot = 0, carb = 0, fat = 0, fiber = 0;
       today.meals.forEach(m => {
@@ -1107,130 +1217,84 @@
         fiber += Math.round((m.baseFiber || 0) * m.scale);
       });
 
-      const cKcal = 314.16, cProt = 226.19;
-      document.getElementById('ringKcal').style.strokeDashoffset = cKcal - Math.min(1, kcal / goals.kcal) * cKcal;
-      document.getElementById('ringProt').style.strokeDashoffset = cProt - Math.min(1, prot / goals.prot) * cProt;
+      const circ = 314.16;
+      document.getElementById('kcalRing').style.strokeDashoffset = circ - Math.min(1, kcal / goals.kcal) * circ;
 
-      document.getElementById('lblKcalDone').textContent = kcal;
-      document.getElementById('lblKcalTarget').textContent = `/ ${goals.kcal} KCAL`;
-      document.getElementById('lblProtDone').textContent = prot;
-      document.getElementById('lblProtGoal').textContent = goals.prot;
-      document.getElementById('lblCarbDone').textContent = carb;
-      document.getElementById('lblCarbGoal').textContent = goals.carb;
-      document.getElementById('lblFatDone').textContent  = fat;
-      document.getElementById('lblFatGoal').textContent  = goals.fat;
-      document.getElementById('lblFiberDone').textContent = `${fiber}g`;
+      document.getElementById('valKcal').textContent = kcal;
+      document.getElementById('lblKcalGoal').textContent = `/ ${goals.kcal} kcal`;
+      document.getElementById('valProt').textContent = prot;
+      document.getElementById('goalProt').textContent = goals.prot;
+      document.getElementById('valCarb').textContent = carb;
+      document.getElementById('goalCarb').textContent = goals.carb;
+      document.getElementById('valFat').textContent  = fat;
+      document.getElementById('goalFat').textContent  = goals.fat;
 
       document.getElementById('barProt').style.width = `${Math.min(100, (prot / goals.prot) * 100)}%`;
       document.getElementById('barCarb').style.width = `${Math.min(100, (carb / goals.carb) * 100)}%`;
       document.getElementById('barFat').style.width  = `${Math.min(100, (fat / goals.fat) * 100)}%`;
 
       const rem = goals.kcal - kcal;
-      const badge = document.getElementById('remBadge');
-      badge.textContent = rem >= 0 ? `Restan ${rem} kcal` : `+${Math.abs(rem)} kcal superávit`;
-      badge.className = rem >= 0
-        ? 'text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-[#30D158]/15 text-[#30D158]'
-        : 'text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-[#FF9F0A]/15 text-[#FF9F0A]';
+      document.getElementById('lblRemaining').textContent =
+        `${rem >= 0 ? `Restan ${rem} kcal` : `+${Math.abs(rem)} kcal superávit`} · Fibra ${fiber}g`;
 
-      document.getElementById('lblWater').textContent = today.water.toFixed(2);
-      document.getElementById('lblWeight').textContent = today.weight || '--';
+      document.getElementById('valWater').textContent = today.water.toFixed(2);
+      document.getElementById('valWeight').textContent = today.weight || '--';
 
-      // Porcentajes en Analítica
-      const totE = (prot * 4) + (carb * 4) + (fat * 9) || 1;
-      const pP = Math.round(((prot * 4) / totE) * 100);
-      const cP = Math.round(((carb * 4) / totE) * 100);
-      const fP = Math.max(0, 100 - pP - cP);
-      document.getElementById('barSplitP').style.width = `${pP}%`;
-      document.getElementById('barSplitC').style.width = `${cP}%`;
-      document.getElementById('barSplitF').style.width = `${fP}%`;
-      document.getElementById('pctP').textContent = `${pP}%`;
-      document.getElementById('pctC').textContent = `${cP}%`;
-      document.getElementById('pctF').textContent = `${fP}%`;
-
-      // Carrusel Presets con iconos vectoriales
-      const presets = getPresets();
-      document.getElementById('presetsCarousel').innerHTML = presets.map(p => `
-        <button onclick="logPreset('${p.id}')" class="ios-card-sm shrink-0 flex items-center gap-2.5 active:scale-95 transition-transform">
-          <div class="w-8 h-8 rounded-xl bg-[#2C2C2E] flex items-center justify-center text-[#0A84FF]">
-            <i data-lucide="${p.icon || 'Utensils'}" class="w-4 h-4"></i>
-          </div>
-          <div class="text-left pr-1">
-            <div class="text-[12px] font-semibold text-white leading-tight">${p.name}</div>
-            <div class="text-[10px] text-[#8E8E93] mt-0.5">${p.kcal} kcal · ${p.prot}g P</div>
+      // Píldoras de Acción Rápida (1 Toque)
+      document.getElementById('quickPresetsRow').innerHTML = store.presets.map(p => `
+        <button onclick="triggerQuickPreset('${p.id}')" class="liquid-pill px-3.5 py-2 shrink-0 flex items-center gap-2.5">
+          <i data-lucide="${p.icon || 'Utensils'}" class="w-3.5 h-3.5 text-white/80"></i>
+          <div class="text-left">
+            <span class="text-[12px] font-semibold text-white block leading-tight">${p.name}</span>
+            <span class="text-[10px] text-[var(--text-secondary)]">${p.kcal} kcal · ${p.prot}g P</span>
           </div>
         </button>
       `).join('');
 
-      document.getElementById('savedPresetsList').innerHTML = presets.map(p => `
-        <div class="ios-row">
-          <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg bg-[#2C2C2E] flex items-center justify-center text-[#0A84FF]">
-              <i data-lucide="${p.icon || 'Utensils'}" class="w-4 h-4"></i>
-            </div>
-            <div>
-              <div class="text-[13px] font-semibold text-white">${p.name}</div>
-              <div class="text-[11px] text-[#8E8E93]">${p.weight}g · ${p.kcal} kcal · P:${p.prot}g C:${p.carb}g G:${p.fat}g</div>
-            </div>
-          </div>
-          <button onclick="deletePreset('${p.id}')" class="text-[#FF453A] p-1.5">
-            <i data-lucide="Trash2" class="w-4 h-4"></i>
-          </button>
-        </div>
-      `).join('');
-
       // Lista de Comidas
-      const listEl = document.getElementById('mealsList');
+      const container = document.getElementById('mealsContainer');
       if (today.meals.length === 0) {
-        listEl.innerHTML = `
-          <div class="ios-card py-8 flex flex-col items-center justify-center text-center">
-            <div class="w-10 h-10 rounded-full bg-[#2C2C2E] flex items-center justify-center text-[#8E8E93] mb-2">
-              <i data-lucide="Utensils" class="w-5 h-5"></i>
-            </div>
-            <p class="text-[13px] font-semibold text-white">Sin comidas registradas hoy</p>
-            <p class="text-[11px] text-[#8E8E93] mt-0.5">Pulsa el botón azul de cámara o elige un plato rápido arriba.</p>
+        container.innerHTML = `
+          <div class="liquid-glass py-8 px-4 text-center">
+            <i data-lucide="Camera" class="w-5 h-5 text-[var(--text-secondary)] mx-auto mb-2"></i>
+            <p class="text-[13px] font-medium text-white">Sin registros hoy</p>
+            <p class="text-[11px] text-[var(--text-secondary)] mt-0.5">Toca "Batido Desayuno" arriba o haz una foto con el botón central.</p>
           </div>
         `;
         lucide.createIcons();
         return;
       }
 
-      listEl.innerHTML = today.meals.map(m => `
-        <div class="ios-card">
+      container.innerHTML = today.meals.map(m => `
+        <div class="liquid-glass p-4">
           <div class="flex justify-between items-start gap-3">
             <div class="flex items-center gap-3">
               ${m.thumb
-                ? `<img src="${m.thumb}" class="w-12 h-12 rounded-xl object-cover border border-white/10 shrink-0" />`
-                : `<div class="w-12 h-12 rounded-xl bg-[#2C2C2E] flex items-center justify-center text-[#0A84FF] shrink-0">
-                     <i data-lucide="${m.icon || 'Utensils'}" class="w-5 h-5"></i>
+                ? `<img src="${m.thumb}" class="w-11 h-11 rounded-2xl object-cover border border-white/15 shrink-0" />`
+                : `<div class="w-11 h-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                     <i data-lucide="Utensils" class="w-4 h-4 text-white/80"></i>
                    </div>`
               }
               <div>
                 <h3 class="text-[14px] font-semibold text-white leading-snug">${m.name}</h3>
-                <p class="text-[11px] text-[#8E8E93] mt-0.5">${m.time} · ~${Math.round(m.baseWeight * m.scale)} g</p>
+                <p class="text-[11px] text-[var(--text-secondary)] mt-0.5">${m.time} · ~${Math.round(m.baseWeight * m.scale)} g</p>
               </div>
             </div>
-            <div class="flex items-center gap-1">
-              <button onclick="saveMealToFavorites(${m.id})" class="p-1.5 text-[#8E8E93] active:text-[#0A84FF]" title="Guardar en favoritos">
-                <i data-lucide="Bookmark" class="w-4 h-4"></i>
-              </button>
-              <button onclick="deleteMeal(${m.id})" class="p-1.5 text-[#8E8E93] active:text-[#FF453A]">
-                <i data-lucide="X" class="w-4 h-4"></i>
-              </button>
-            </div>
+            <button onclick="deleteMeal(${m.id})" class="p-1 text-[var(--text-secondary)] active:text-white">
+              <i data-lucide="X" class="w-4 h-4"></i>
+            </button>
           </div>
 
-          <div class="grid grid-cols-4 gap-1.5 mt-3 bg-black/40 rounded-xl p-2 text-center border border-white/5">
-            <div><span class="text-[10px] text-[#8E8E93] block">Kcal</span><span class="text-[12px] font-bold text-[#30D158]">${Math.round(m.baseKcal * m.scale)}</span></div>
-            <div><span class="text-[10px] text-[#8E8E93] block">Proteína</span><span class="text-[12px] font-bold text-[#0A84FF]">${Math.round(m.baseProt * m.scale)}g</span></div>
-            <div><span class="text-[10px] text-[#8E8E93] block">Carbos</span><span class="text-[12px] font-bold text-[#FF9F0A]">${Math.round(m.baseCarb * m.scale)}g</span></div>
-            <div><span class="text-[10px] text-[#8E8E93] block">Grasas</span><span class="text-[12px] font-bold text-[#FF453A]">${Math.round(m.baseFat * m.scale)}g</span></div>
+          <div class="grid grid-cols-4 gap-2 mt-3 py-2 px-3 rounded-2xl bg-black/30 border border-white/5 text-center">
+            <div><span class="text-[10px] text-[var(--text-secondary)] block">Kcal</span><span class="text-[12px] font-semibold text-white">${Math.round(m.baseKcal * m.scale)}</span></div>
+            <div><span class="text-[10px] text-[var(--text-secondary)] block">Prot</span><span class="text-[12px] font-semibold text-white">${Math.round(m.baseProt * m.scale)}g</span></div>
+            <div><span class="text-[10px] text-[var(--text-secondary)] block">Carb</span><span class="text-[12px] font-semibold text-white/80">${Math.round(m.baseCarb * m.scale)}g</span></div>
+            <div><span class="text-[10px] text-[var(--text-secondary)] block">Grasa</span><span class="text-[12px] font-semibold text-white/70">${Math.round(m.baseFat * m.scale)}g</span></div>
           </div>
 
-          <p class="text-[11px] text-[#8E8E93] mt-2 leading-relaxed">${(m.items || []).join(' · ')}</p>
-
-          <div class="flex items-center gap-3 mt-3 pt-2.5 border-t border-[#2C2C2E]">
-            <span class="text-[11px] text-[#8E8E93] w-20">Ración: <strong class="text-white">${m.scale}x</strong></span>
-            <input type="range" min="0.5" max="2.0" step="0.1" value="${m.scale}" oninput="updateScale(${m.id}, this.value)" class="flex-1" />
+          <div class="flex items-center gap-3 mt-3 pt-2 border-t border-white/5">
+            <span class="text-[11px] text-[var(--text-secondary)] w-20">Ración: <strong class="text-white">${m.scale}x</strong></span>
+            <input type="range" min="0.5" max="2.0" step="0.1" value="${m.scale}" oninput="updateMealScale(${m.id}, this.value)" class="flex-1" />
           </div>
         </div>
       `).join('');
@@ -1238,7 +1302,7 @@
       lucide.createIcons();
     }
 
-    renderUI();
+    render();
   </script>
 </body>
 </html>
