@@ -1,26 +1,51 @@
 <!DOCTYPE html>
-<html lang="es" class="dark">
+<html lang="es" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="NutriOS" />
-  <meta name="theme-color" content="#000000" />
-  <title>NutriOS 27</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta id="themeColorMeta" name="theme-color" content="#000000" />
+  <title>NutriOS</title>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    :root {
-      --glass-opacity: 0.58;
-      --glass-blur: 28px;
-      --glass-border-top: rgba(255, 255, 255, 0.16);
-      --glass-border-bottom: rgba(255, 255, 255, 0.05);
-      --text-primary: #FFFFFF;
-      --text-secondary: rgba(235, 235, 245, 0.56);
-      --text-tertiary: rgba(235, 235, 245, 0.30);
-      --accent-ice: #E5F0FF;
-      --spring: cubic-bezier(0.22, 1, 0.36, 1);
+    /* ==========================================================================
+       SISTEMA DE TOKENS ESTRUCTURALES (AUDITORÍA HIG)
+       - Escala tipográfica estricta de 4 niveles: 12px / 15px / 20px / 36px
+       - Espaciado múltiplo de 8: 8px / 16px / 24px
+       - Ratios de contraste verificados > 6.2:1 en texto secundario
+       ========================================================================== */
+    :root, [data-theme="light"] {
+      --bg: #F5F5F7;
+      --surface: #FFFFFF;
+      --surface-subtle: #EEEEF0;
+      --text-primary: #111111;
+      --text-secondary: #5C5C5C; /* Ratio 6.8:1 sobre #FFFFFF */
+      --border: rgba(0, 0, 0, 0.08);
+      --accent: #111111;
+      --accent-fg: #FFFFFF;
+      --bar-track: #E5E5EA;
+      --status-ok: #1D7A36;
+      --status-warn: #B25000;
+      --danger: #D70015;
+      --nav-bg: rgba(255, 255, 255, 0.88);
+    }
+
+    [data-theme="dark"] {
+      --bg: #000000;
+      --surface: #141416;
+      --surface-subtle: #1F1F22;
+      --text-primary: #F5F5F7;
+      --text-secondary: #98989F; /* Ratio 6.2:1 sobre #141416 */
+      --border: rgba(255, 255, 255, 0.09);
+      --accent: #FFFFFF;
+      --accent-fg: #000000;
+      --bar-track: #262629;
+      --status-ok: #30D158;
+      --status-warn: #FF9F0A;
+      --danger: #FF453A;
+      --nav-bg: rgba(20, 20, 22, 0.88);
     }
 
     * {
@@ -28,254 +53,294 @@
       -webkit-touch-callout: none;
       box-sizing: border-box;
       user-select: none;
+      margin: 0;
+      padding: 0;
     }
 
     input, textarea, select {
       user-select: text;
+      font-family: inherit;
     }
 
     html, body {
-      margin: 0;
-      padding: 0;
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: #000000;
+      background-color: var(--bg);
       color: var(--text-primary);
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", sans-serif;
+      font-size: 15px;
+      line-height: 1.4;
       -webkit-font-smoothing: antialiased;
-      letter-spacing: -0.015em;
+      font-variant-numeric: tabular-nums;
+      transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* Fondo ambiental sutil para que Liquid Glass refracte luz */
-    .ambient-glow {
-      position: fixed;
-      top: -120px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 340px;
-      height: 260px;
-      background: radial-gradient(circle, rgba(255,255,255,0.07) 0%, rgba(160,185,255,0.03) 45%, transparent 75%);
-      pointer-events: none;
-      z-index: 0;
-    }
+    /* Escala Tipográfica Estricta (4 Tamaños: 12 / 15 / 20 / 36) */
+    .t-12 { font-size: 12px; line-height: 1.35; font-weight: 500; }
+    .t-15 { font-size: 15px; line-height: 1.4;  font-weight: 400; }
+    .t-15-sb { font-size: 15px; line-height: 1.4; font-weight: 600; }
+    .t-20 { font-size: 20px; line-height: 1.25; font-weight: 600; letter-spacing: -0.02em; }
+    .t-36 { font-size: 36px; line-height: 1.05; font-weight: 700; letter-spacing: -0.03em; }
 
-    .app-frame {
+    .text-sec { color: var(--text-secondary); }
+
+    /* Contenedor iPhone 13 (390pt ancho) */
+    .app-shell {
       position: fixed;
       inset: 0;
       max-width: 390px;
       margin: 0 auto;
       display: flex;
       flex-direction: column;
-      z-index: 1;
+      background-color: var(--bg);
     }
 
-    /* Contenedor de Scroll Nativo */
-    .scroll-stage {
+    .viewport {
       flex: 1;
       overflow-y: auto;
       overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
-      padding-top: calc(env(safe-area-inset-top, 44px) + 6px);
-      padding-bottom: 108px;
-      padding-left: 18px;
-      padding-right: 18px;
+      padding-top: calc(env(safe-area-inset-top, 47px) + 12px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 24px) + 88px);
+      padding-left: 16px;
+      padding-right: 16px;
     }
-    .scroll-stage::-webkit-scrollbar,
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
+    .viewport::-webkit-scrollbar,
+    .h-scroll::-webkit-scrollbar { display: none; }
+
+    .stack-16 > * + * { margin-top: 16px; }
+    .stack-8 > * + * { margin-top: 8px; }
+
+    /* Superficie Estructural Limpia */
+    .card {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
     }
 
-    /* Material Liquid Glass de iOS 27 (Bordes definidos + iluminación especular) */
-    .liquid-glass {
-      background: linear-gradient(
-        165deg,
-        rgba(38, 38, 42, var(--glass-opacity)) 0%,
-        rgba(20, 20, 23, calc(var(--glass-opacity) + 0.12)) 100%
-      );
-      backdrop-filter: saturate(190%) blur(var(--glass-blur));
-      -webkit-backdrop-filter: saturate(190%) blur(var(--glass-blur));
-      border-top: 1px solid var(--glass-border-top);
-      border-left: 0.5px solid rgba(255, 255, 255, 0.09);
-      border-right: 0.5px solid rgba(255, 255, 255, 0.09);
-      border-bottom: 1px solid var(--glass-border-bottom);
-      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.65), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
-      border-radius: 24px;
-      transition: transform 0.25s var(--spring), background 0.25s ease;
+    .card-compact {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
     }
 
-    .liquid-pill {
-      background: rgba(255, 255, 255, 0.06);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-top: 0.5px solid rgba(255, 255, 255, 0.16);
-      border-bottom: 0.5px solid rgba(255, 255, 255, 0.05);
-      border-left: 0.5px solid rgba(255, 255, 255, 0.08);
-      border-right: 0.5px solid rgba(255, 255, 255, 0.08);
-      border-radius: 9999px;
-      transition: all 0.22s var(--spring);
-    }
-
-    .liquid-pill:active {
-      transform: scale(0.96);
-      background: rgba(255, 255, 255, 0.12);
-    }
-
-    /* Segmented Control iOS 27 (Dark glass is lighter, selected item has crisp contrast) */
-    .ios27-segmented {
-      background: rgba(255, 255, 255, 0.06);
-      border: 0.5px solid rgba(255, 255, 255, 0.12);
-      padding: 3px;
-      border-radius: 999px;
-      display: inline-flex;
-      backdrop-filter: blur(20px);
-    }
-
-    .ios27-seg-item {
-      padding: 5px 12px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--text-secondary);
-      transition: all 0.25s var(--spring);
-    }
-
-    .ios27-seg-item.active {
-      background: rgba(255, 255, 255, 0.16);
-      color: #FFFFFF;
+    /* Botones y Controles con Movimiento 0.15s cubic-bezier(0.4, 0, 0.2, 1) */
+    .btn {
+      min-height: 44px;
+      padding: 0 16px;
+      border-radius: 12px;
+      font-size: 15px;
       font-weight: 600;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 2px 8px rgba(0,0,0,0.4);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background-color: var(--accent);
+      color: var(--accent-fg);
     }
 
-    /* Tab Bar Flotante Concéntrica iOS 27 (Soluciona el margen excesivo inferior) */
-    .ios27-tabbar-wrap {
+    .btn-subtle {
+      background-color: var(--surface-subtle);
+      color: var(--text-primary);
+    }
+
+    .btn-chip {
+      height: 44px;
+      padding: 0 16px;
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn-chip:active { transform: scale(0.97); }
+
+    /* Control Segmentado Limpio */
+    .segmented {
+      background-color: var(--surface-subtle);
+      padding: 3px;
+      border-radius: 10px;
+      display: inline-flex;
+      border: 1px solid var(--border);
+    }
+    .seg-btn {
+      height: 32px;
+      padding: 0 12px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .seg-btn.active {
+      background-color: var(--surface);
+      color: var(--text-primary);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Barras de Progreso */
+    .bar-track {
+      width: 100%;
+      background-color: var(--bar-track);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      background-color: var(--accent);
+      border-radius: 999px;
+      transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Filas de Formulario / Ajustes */
+    .list-group {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .list-row {
+      min-height: 48px;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    .list-row:last-child { border-bottom: none; }
+
+    .input-clean {
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      text-align: right;
+      font-size: 15px;
+      font-weight: 500;
+      outline: none;
+      width: 140px;
+    }
+
+    .input-box {
+      height: 44px;
+      background-color: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0 12px;
+      color: var(--text-primary);
+      font-size: 15px;
+      outline: none;
+      width: 100%;
+    }
+
+    /* Navegación Inferior Compacta y Bien Integrada al Borde del iPhone 13 */
+    .bottom-bar-wrap {
       position: fixed;
-      bottom: max(12px, calc(env(safe-area-inset-bottom, 20px) - 8px));
+      bottom: max(10px, calc(env(safe-area-inset-bottom, 20px) - 8px));
       left: 0;
       right: 0;
       max-width: 390px;
       margin: 0 auto;
-      padding: 0 18px;
-      z-index: 40;
+      padding: 0 16px;
+      z-index: 30;
       pointer-events: none;
     }
 
-    .ios27-tabbar {
+    .bottom-bar {
       pointer-events: auto;
-      height: 62px;
-      padding: 0 10px;
-      border-radius: 999px;
-      background: rgba(28, 28, 32, 0.72);
-      backdrop-filter: saturate(200%) blur(32px);
-      -webkit-backdrop-filter: saturate(200%) blur(32px);
-      border-top: 1px solid rgba(255, 255, 255, 0.20);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      border-left: 0.5px solid rgba(255, 255, 255, 0.12);
-      border-right: 0.5px solid rgba(255, 255, 255, 0.12);
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75);
+      height: 60px;
+      padding: 0 8px;
+      background-color: var(--nav-bg);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      transition: transform 0.35s var(--spring), opacity 0.3s ease;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     }
 
-    .ios27-tabbar.minimized {
-      transform: translateY(10px) scale(0.93);
-      opacity: 0.88;
-    }
-
-    .tab-item {
-      width: 58px;
-      height: 46px;
-      border-radius: 999px;
+    .nav-tab {
+      flex: 1;
+      height: 44px;
+      border-radius: 12px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 2px;
-      color: var(--text-secondary);
-      transition: all 0.22s var(--spring);
+      cursor: pointer;
+      transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     }
+    .nav-tab:active { transform: scale(0.95); }
+    .nav-tab.active { color: var(--text-primary); }
 
-    .tab-item.active {
-      background: rgba(255, 255, 255, 0.11);
-      color: #FFFFFF;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
-    }
-
-    /* Botón de Cámara Prominente iOS 27 */
-    .camera-prominent {
-      width: 50px;
-      height: 50px;
-      border-radius: 999px;
-      background: #FFFFFF;
-      color: #000000;
+    .cam-trigger {
+      width: 48px;
+      height: 44px;
+      margin: 0 6px;
+      border-radius: 12px;
+      background-color: var(--accent);
+      color: var(--accent-fg);
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 18px rgba(255, 255, 255, 0.28);
-      transition: transform 0.2s var(--spring);
       cursor: pointer;
+      transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .camera-prominent:active {
-      transform: scale(0.90);
-    }
+    .cam-trigger:active { transform: scale(0.94); }
 
-    /* Anillo Minimalista */
-    .ring-track {
-      stroke: rgba(255, 255, 255, 0.08);
-    }
-    .ring-progress {
-      transition: stroke-dashoffset 0.75s var(--spring);
-      transform: rotate(-90deg);
-      transform-origin: 50% 50%;
-    }
-
-    /* Filas de Ajustes Agrupadas */
-    .ios27-list {
-      border-radius: 20px;
-      overflow: hidden;
-    }
-    .ios27-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 13px 16px;
-      border-bottom: 0.5px solid rgba(255, 255, 255, 0.07);
-    }
-    .ios27-row:last-child {
-      border-bottom: none;
-    }
-
+    /* Slider de ración */
     input[type="range"] {
       -webkit-appearance: none;
       appearance: none;
       height: 4px;
-      background: rgba(255, 255, 255, 0.14);
+      background: var(--bar-track);
       border-radius: 999px;
+      width: 100%;
     }
     input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
-      background: #FFFFFF;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+      background: var(--accent);
+      border: 2px solid var(--surface);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
     }
 
-    .ios-toggle {
+    /* Switch */
+    .switch {
       width: 44px;
       height: 26px;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.14);
+      background-color: var(--bar-track);
       position: relative;
-      transition: background 0.25s ease;
       cursor: pointer;
+      transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .ios-toggle.on {
-      background: #FFFFFF;
-    }
-    .ios-toggle::after {
+    .switch.on { background-color: var(--status-ok); }
+    .switch::after {
       content: "";
       position: absolute;
       top: 2px;
@@ -283,372 +348,361 @@
       width: 22px;
       height: 22px;
       border-radius: 50%;
-      background: #000000;
-      transition: transform 0.25s var(--spring), background 0.25s ease;
-    }
-    .ios-toggle:not(.on)::after {
       background: #FFFFFF;
+      transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .ios-toggle.on::after {
-      transform: translateX(18px);
-    }
+    .switch.on::after { transform: translateX(18px); }
+
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
-  <div class="ambient-glow"></div>
+  <div class="app-shell">
+    <div class="viewport">
 
-  <div class="app-frame">
-    <div id="scrollStage" class="scroll-stage">
-
-      <!-- CABECERA ULTRA-MINIMALISTA iOS 27 -->
-      <header class="flex justify-between items-center mb-5">
+      <!-- CABECERA CON JERARQUÍA CLARA (20px título / 12px subtítulo al 60%) -->
+      <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
         <div>
-          <div class="flex items-center gap-2">
-            <p id="lblDate" class="text-[11px] font-medium uppercase tracking-widest text-[var(--text-secondary)]"></p>
-            <span id="cloudStatusDot" class="w-1.5 h-1.5 rounded-full bg-white/30" title="Estado de sincronización"></span>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span id="dateLabel" class="t-12 text-sec"></span>
+            <span id="syncDot" style="width:6px; height:6px; border-radius:50%; background:var(--text-secondary);"></span>
           </div>
-          <h1 id="lblTitle" class="text-[28px] font-bold tracking-tight text-white leading-tight mt-0.5">Hoy</h1>
+          <h1 id="pageTitle" class="t-20" style="margin-top:2px;">Hoy</h1>
         </div>
 
-        <div class="ios27-segmented">
-          <button id="btnTrain" onclick="setMode('train')" class="ios27-seg-item active">Entreno</button>
-          <button id="btnRest" onclick="setMode('rest')" class="ios27-seg-item">Descanso</button>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <!-- Botón rápido Modo Claro / Oscuro -->
+          <button onclick="cycleTheme()" class="btn-subtle" style="width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; border:1px solid var(--border); cursor:pointer;" title="Cambiar Tema">
+            <i id="themeIcon" data-lucide="Sun" style="width:16px; height:16px;"></i>
+          </button>
+
+          <!-- Selector Entreno / Descanso -->
+          <div class="segmented">
+            <button id="btnTrain" onclick="setDayMode('train')" class="seg-btn active">Entreno</button>
+            <button id="btnRest" onclick="setDayMode('rest')" class="seg-btn">Descanso</button>
+          </div>
         </div>
       </header>
 
       <!-- ==========================================
-           PESTAÑA 1: HOY (MINIMALISMO PURO)
+           VISTA 1: HOY
            ========================================== -->
-      <main id="view-today" class="space-y-3.5">
+      <main id="view-today" class="stack-16">
 
-        <!-- Tarjeta Principal: Calorías y Macronutrientes Monocromáticos -->
-        <section class="liquid-glass p-5">
-          <div class="flex items-center justify-between gap-5">
+        <!-- Tarjeta Principal de Energía y Macros -->
+        <section class="card">
+          <div style="display:flex; justify-content:space-between; align-items:baseline;">
+            <div>
+              <span class="t-12 text-sec">Calorías consumidas</span>
+              <div style="display:flex; align-items:baseline; gap:8px; margin-top:4px;">
+                <span id="kcalCurrent" class="t-36">0</span>
+                <span id="kcalTarget" class="t-15 text-sec">/ 2950 kcal</span>
+              </div>
+            </div>
+            <span id="kcalRemaining" class="t-12" style="color:var(--status-ok);">Restan 2950 kcal</span>
+          </div>
 
-            <!-- Anillo Único de Alta Precisión -->
-            <div class="relative w-[124px] h-[124px] shrink-0 flex items-center justify-center">
-              <svg class="w-full h-full" viewBox="0 0 120 120">
-                <circle class="ring-track" cx="60" cy="60" r="50" stroke-width="8" fill="none" />
-                <circle id="kcalRing" class="ring-progress" cx="60" cy="60" r="50" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" fill="none" stroke-dasharray="314.16" stroke-dashoffset="314.16" />
-              </svg>
-              <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
-                <span id="valKcal" class="text-[26px] font-bold tracking-tight leading-none">0</span>
-                <span id="lblKcalGoal" class="text-[10px] font-medium text-[var(--text-secondary)] mt-1">/ 2950 kcal</span>
+          <!-- Barra Maestra de Calorías -->
+          <div class="bar-track" style="height:8px; margin-top:16px; margin-bottom:20px;">
+            <div id="barKcal" class="bar-fill" style="width:0%;"></div>
+          </div>
+
+          <!-- 3 Columnas Simétricas de Macronutrientes -->
+          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;">
+            <div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                <span class="t-12 text-sec">Proteína</span>
+                <span class="t-12"><strong id="protCurrent">0</strong>/<span id="protTarget">170</span>g</span>
+              </div>
+              <div class="bar-track" style="height:5px;">
+                <div id="barProt" class="bar-fill" style="width:0%;"></div>
               </div>
             </div>
 
-            <!-- Barras Minimalistas Blanco/Plata -->
-            <div class="flex-1 space-y-3">
-              <div>
-                <div class="flex justify-between text-[12px] mb-1">
-                  <span class="text-[var(--text-secondary)] font-medium">Proteínas</span>
-                  <span class="font-semibold text-white"><span id="valProt">0</span> <span class="text-[var(--text-tertiary)] font-normal">/ <span id="goalProt">170</span>g</span></span>
-                </div>
-                <div class="h-[5px] w-full bg-white/10 rounded-full overflow-hidden">
-                  <div id="barProt" class="h-full bg-white rounded-full transition-all duration-500" style="width:0%"></div>
-                </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                <span class="t-12 text-sec">Carbos</span>
+                <span class="t-12"><strong id="carbCurrent">0</strong>/<span id="carbTarget">365</span>g</span>
               </div>
-
-              <div>
-                <div class="flex justify-between text-[12px] mb-1">
-                  <span class="text-[var(--text-secondary)] font-medium">Carbohidratos</span>
-                  <span class="font-semibold text-white"><span id="valCarb">0</span> <span class="text-[var(--text-tertiary)] font-normal">/ <span id="goalCarb">365</span>g</span></span>
-                </div>
-                <div class="h-[5px] w-full bg-white/10 rounded-full overflow-hidden">
-                  <div id="barCarb" class="h-full bg-white/75 rounded-full transition-all duration-500" style="width:0%"></div>
-                </div>
+              <div class="bar-track" style="height:5px;">
+                <div id="barCarb" class="bar-fill" style="width:0%; opacity:0.75;"></div>
               </div>
+            </div>
 
-              <div>
-                <div class="flex justify-between text-[12px] mb-1">
-                  <span class="text-[var(--text-secondary)] font-medium">Grasas</span>
-                  <span class="font-semibold text-white"><span id="valFat">0</span> <span class="text-[var(--text-tertiary)] font-normal">/ <span id="goalFat">88</span>g</span></span>
-                </div>
-                <div class="h-[5px] w-full bg-white/10 rounded-full overflow-hidden">
-                  <div id="barFat" class="h-full bg-white/50 rounded-full transition-all duration-500" style="width:0%"></div>
-                </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                <span class="t-12 text-sec">Grasas</span>
+                <span class="t-12"><strong id="fatCurrent">0</strong>/<span id="fatTarget">88</span>g</span>
+              </div>
+              <div class="bar-track" style="height:5px;">
+                <div id="barFat" class="bar-fill" style="width:0%; opacity:0.5;"></div>
               </div>
             </div>
           </div>
 
-          <!-- Pie de tarjeta: Restante + Sincronización Directa -->
-          <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-[11px]">
-            <span id="lblRemaining" class="text-[var(--text-secondary)] font-medium">Restan 2950 kcal · Fibra 0g</span>
-            <div class="flex items-center gap-3">
-              <button onclick="syncCloudDB(true)" class="flex items-center gap-1 text-[var(--text-secondary)] active:text-white">
-                <i data-lucide="Cloud" class="w-3.5 h-3.5"></i>
-                <span id="cloudBtnText">Cloud OK</span>
+          <!-- Pie de Sincronización Directa (GitHub + Apple Salud) -->
+          <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+            <span id="fiberLabel" class="t-12 text-sec">Fibra: 0g</span>
+            <div style="display:flex; gap:14px;">
+              <button onclick="pushToGitHub(true)" class="t-12 text-sec" style="background:none; border:none; display:flex; align-items:center; gap:5px; cursor:pointer;">
+                <i data-lucide="Cloud" style="width:14px; height:14px;"></i>
+                <span id="syncStatusText">GitHub Sync</span>
               </button>
-              <button onclick="syncAppleHealth()" class="flex items-center gap-1 text-white font-medium active:opacity-60">
-                <i data-lucide="Activity" class="w-3.5 h-3.5"></i>
-                <span>Salud</span>
+              <button onclick="sendToAppleHealth()" class="t-12" style="background:none; border:none; color:var(--text-primary); display:flex; align-items:center; gap:5px; cursor:pointer;">
+                <i data-lucide="Activity" style="width:14px; height:14px;"></i>
+                <span>Enviar a Salud</span>
               </button>
             </div>
           </div>
         </section>
 
-        <!-- Acciones Rápidas (1 Toque: Batido + Comidas Frecuentes) -->
+        <!-- Acciones Rápidas en 1 Toque (Batido Desayuno siempre a mano) -->
         <section>
-          <div class="flex justify-between items-center mb-2 px-1">
-            <span class="text-[11px] font-medium uppercase tracking-widest text-[var(--text-secondary)]">Acciones Rápidas</span>
-            <button onclick="openPresetCreator()" class="text-[11px] text-[var(--text-secondary)] active:text-white flex items-center gap-1">
-              <i data-lucide="Plus" class="w-3 h-3"></i> Añadir
-            </button>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span class="t-12 text-sec">Acciones rápidas (1 toque)</span>
+            <button onclick="toggleModal('presetModal', true)" class="t-12 text-sec" style="background:none; border:none; cursor:pointer;">+ Crear</button>
           </div>
-          <div id="quickPresetsRow" class="flex gap-2 overflow-x-auto no-scrollbar pb-1"></div>
+          <div id="presetsRow" class="h-scroll" style="display:flex; gap:8px; overflow-x:auto;"></div>
         </section>
 
-        <!-- Sub-tarjetas Minimalistas: Agua y Peso Corporal -->
-        <section class="grid grid-cols-2 gap-3">
-          <div class="liquid-glass p-3.5 flex items-center justify-between">
-            <div>
-              <span class="text-[11px] text-[var(--text-secondary)] block">Agua</span>
-              <span class="text-[17px] font-bold text-white"><span id="valWater">0.0</span><span class="text-[11px] font-normal text-[var(--text-secondary)]"> L</span></span>
+        <!-- Agua y Peso Corporal (44px Touch Targets) -->
+        <section style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div class="card-compact">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="t-12 text-sec">Agua</span>
+              <span class="t-15-sb"><span id="waterVal">0.0</span> L</span>
             </div>
-            <div class="flex gap-1">
-              <button onclick="addWater(0.25)" class="liquid-pill px-2.5 py-1.5 text-[11px] font-medium text-white">+250</button>
-              <button onclick="addWater(0.5)" class="liquid-pill px-2.5 py-1.5 text-[11px] font-medium text-white">+500</button>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;">
+              <button onclick="addWater(0.25)" class="btn btn-subtle" style="min-height:38px; padding:0;">+250ml</button>
+              <button onclick="addWater(0.5)" class="btn btn-subtle" style="min-height:38px; padding:0;">+500ml</button>
             </div>
           </div>
 
-          <div class="liquid-glass p-3.5 flex items-center justify-between">
-            <div>
-              <span class="text-[11px] text-[var(--text-secondary)] block">Peso</span>
-              <span class="text-[17px] font-bold text-white"><span id="valWeight">--</span><span class="text-[11px] font-normal text-[var(--text-secondary)]"> kg</span></span>
+          <div class="card-compact">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="t-12 text-sec">Peso hoy</span>
+              <span class="t-15-sb"><span id="weightVal">--</span> kg</span>
             </div>
-            <div class="flex items-center gap-1">
-              <input id="inpWeight" type="number" step="0.1" placeholder="74.5" class="w-14 bg-white/5 border border-white/10 rounded-full px-2.5 py-1 text-[12px] text-white text-center focus:outline-none" />
-              <button onclick="saveWeight()" class="liquid-pill p-1.5 text-white">
-                <i data-lucide="Check" class="w-3.5 h-3.5"></i>
-              </button>
+            <div style="display:flex; gap:8px; margin-top:12px;">
+              <input id="weightInput" type="number" step="0.1" placeholder="74.5" class="input-box" style="height:38px;" />
+              <button onclick="saveWeight()" class="btn btn-primary" style="min-height:38px; padding:0 12px;">OK</button>
             </div>
           </div>
         </section>
 
-        <!-- Estado de Análisis de IA -->
-        <div id="aiLoader" class="hidden liquid-glass p-4 flex items-center gap-3.5">
-          <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin shrink-0"></div>
+        <!-- Estado de Carga IA -->
+        <div id="aiLoading" class="card-compact hidden" style="display:flex; align-items:center; gap:12px;">
+          <div style="width:18px; height:18px; border:2px solid var(--text-primary); border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite;"></div>
           <div>
-            <p class="text-[13px] font-semibold text-white">Analizando fotografía con IA...</p>
-            <p class="text-[11px] text-[var(--text-secondary)]">Calculando peso, macros y guardando en base de datos</p>
+            <div class="t-15-sb">Analizando comida con IA...</div>
+            <div class="t-12 text-sec">Estimando gramos, macros y sincronizando en GitHub</div>
           </div>
         </div>
+        <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
 
-        <!-- Registro de Comidas del Día -->
+        <!-- Lista de Comidas del Día -->
         <section>
-          <div class="flex justify-between items-center mb-2 px-1">
-            <span class="text-[11px] font-medium uppercase tracking-widest text-[var(--text-secondary)]">Platos de Hoy</span>
-            <div class="flex items-center gap-3">
-              <label class="text-[11px] text-[var(--text-secondary)] active:text-white flex items-center gap-1 cursor-pointer">
-                <i data-lucide="Image" class="w-3.5 h-3.5"></i> Fototeca
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span class="t-12 text-sec">Comidas registradas hoy</span>
+            <div style="display:flex; gap:12px;">
+              <label class="t-12 text-sec" style="cursor:pointer; display:flex; align-items:center; gap:4px;">
+                <i data-lucide="Image" style="width:14px; height:14px;"></i> Fototeca
                 <input type="file" accept="image/*" class="hidden" onchange="handlePhoto(event)" />
               </label>
-              <button onclick="toggleModal('textModal', true)" class="text-[11px] text-[var(--text-secondary)] active:text-white flex items-center gap-1">
-                <i data-lucide="PenLine" class="w-3.5 h-3.5"></i> Texto
+              <button onclick="toggleModal('textModal', true)" class="t-12 text-sec" style="background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:4px;">
+                <i data-lucide="PenLine" style="width:14px; height:14px;"></i> Texto
               </button>
             </div>
           </div>
-          <div id="mealsContainer" class="space-y-2.5"></div>
+          <div id="mealsList" class="stack-8"></div>
         </section>
 
       </main>
 
       <!-- ==========================================
-           PESTAÑA 2: HISTORIAL Y NUBE (7 DÍAS)
+           VISTA 2: HISTORIAL (7 DÍAS)
            ========================================== -->
-      <main id="view-analytics" class="hidden space-y-3.5">
-        <div class="grid grid-cols-3 gap-2.5">
-          <div class="liquid-glass p-3.5">
-            <span class="text-[11px] text-[var(--text-secondary)] block">Media 7d</span>
-            <span id="avgKcal7d" class="text-[16px] font-bold text-white mt-0.5 block">0 kcal</span>
+      <main id="view-analytics" class="stack-16 hidden">
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px;">
+          <div class="card-compact">
+            <span class="t-12 text-sec">Media 7d</span>
+            <div id="avgKcal7d" class="t-20" style="margin-top:4px;">0</div>
           </div>
-          <div class="liquid-glass p-3.5">
-            <span class="text-[11px] text-[var(--text-secondary)] block">Proteína 7d</span>
-            <span id="avgProt7d" class="text-[16px] font-bold text-white mt-0.5 block">0 g</span>
+          <div class="card-compact">
+            <span class="t-12 text-sec">Proteína 7d</span>
+            <div id="avgProt7d" class="t-20" style="margin-top:4px;">0g</div>
           </div>
-          <div class="liquid-glass p-3.5">
-            <span class="text-[11px] text-[var(--text-secondary)] block">Días activos</span>
-            <span id="activeDays7d" class="text-[16px] font-bold text-white mt-0.5 block">0 / 7</span>
+          <div class="card-compact">
+            <span class="t-12 text-sec">Días reg.</span>
+            <div id="daysLogged7d" class="t-20" style="margin-top:4px;">0/7</div>
           </div>
         </div>
 
-        <section class="liquid-glass p-5">
-          <div class="flex justify-between items-center mb-4">
-            <div>
-              <h3 class="text-[14px] font-semibold text-white">Balance Semanal</h3>
-              <p class="text-[11px] text-[var(--text-secondary)]">Últimos 7 días sincronizados</p>
-            </div>
-            <i data-lucide="BarChart2" class="w-4 h-4 text-[var(--text-secondary)]"></i>
-          </div>
-          <div id="chartBars" class="h-36 flex items-end justify-between gap-2 pt-4 pb-1 px-1 border-b border-white/10"></div>
+        <section class="card">
+          <span class="t-15-sb">Calorías últimos 7 días</span>
+          <div id="chart7d" style="height:140px; display:flex; align-items:flex-end; justify-content:space-between; gap:8px; padding-top:24px; margin-top:8px; border-bottom:1px solid var(--border);"></div>
         </section>
 
-        <section class="liquid-glass p-5">
-          <h3 class="text-[14px] font-semibold text-white mb-2">Evolución Corporal</h3>
-          <div id="weightList" class="divide-y divide-white/10 text-[12px]"></div>
+        <section class="card">
+          <span class="t-15-sb" style="display:block; margin-bottom:12px;">Historial de peso</span>
+          <div id="weightHistoryList" class="stack-8"></div>
         </section>
       </main>
 
       <!-- ==========================================
-           PESTAÑA 3: AJUSTES & BASE DE DATOS GITHUB
+           VISTA 3: AJUSTES
            ========================================== -->
-      <main id="view-settings" class="hidden space-y-4">
+      <main id="view-settings" class="stack-16 hidden">
 
-        <!-- Control de Cristal Líquido iOS 27 -->
+        <!-- Apariencia -->
         <div>
-          <span class="text-[11px] font-medium uppercase tracking-widest text-[var(--text-secondary)] px-2 block mb-1.5">Apariencia iOS 27 Liquid Glass</span>
-          <div class="liquid-glass ios27-list">
-            <div class="ios27-row">
-              <span class="text-[13px]">Opacidad del Cristal (Clear ↔ Tinted)</span>
-              <input id="glassSlider" type="range" min="0.25" max="0.85" step="0.05" value="0.58" oninput="updateGlassTint(this.value)" class="w-28" />
-            </div>
-          </div>
-        </div>
-
-        <!-- Base de Datos en la Nube (GitHub Cloud Sync) -->
-        <div>
-          <span class="text-[11px] font-medium uppercase tracking-widest text-[var(--text-secondary)] px-2 block mb-1.5">Base de Datos en GitHub (Cloud Sync)</span>
-          <div class="liquid-glass ios27-list">
-            <div class="ios27-row">
-              <span class="text-[13px]">GitHub Token (PAT)</span>
-              <input id="cfgGhToken" type="password" placeholder="ghp_..." class="bg-transparent text-right text-[13px] text-white focus:outline-none w-44" />
-            </div>
-            <div class="ios27-row">
-              <span class="text-[13px]">Usuario / Repo</span>
-              <input id="cfgGhRepo" type="text" placeholder="usuario/nutrios" class="bg-transparent text-right text-[13px] text-white focus:outline-none w-44" />
-            </div>
-            <div class="ios27-row">
-              <div class="flex gap-2 w-full pt-1">
-                <button onclick="pullFromGitHub()" class="flex-1 liquid-pill py-2 text-[12px] font-medium text-white flex items-center justify-center gap-1.5">
-                  <i data-lucide="CloudDownload" class="w-3.5 h-3.5"></i> Descargar de GitHub
-                </button>
-                <button onclick="syncCloudDB(true)" class="flex-1 liquid-pill py-2 text-[12px] font-medium text-white flex items-center justify-center gap-1.5">
-                  <i data-lucide="CloudUpload" class="w-3.5 h-3.5"></i> Guardar en GitHub
-                </button>
+          <span class="t-12 text-sec" style="display:block; margin-bottom:8px; padding-left:4px;">Apariencia</span>
+          <div class="list-group">
+            <div class="list-row">
+              <span class="t-15">Tema de la interfaz</span>
+              <div class="segmented">
+                <button id="thLight" onclick="setTheme('light')" class="seg-btn">Claro</button>
+                <button id="thDark" onclick="setTheme('dark')" class="seg-btn">Oscuro</button>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Base de Datos en GitHub (Preconfigurada con tu Token) -->
+        <div>
+          <span class="t-12 text-sec" style="display:block; margin-bottom:8px; padding-left:4px;">Base de datos en GitHub (nutrios-db.json)</span>
+          <div class="list-group">
+            <div class="list-row">
+              <span class="t-15">Token GitHub</span>
+              <input id="cfgGhToken" type="password" class="input-clean" />
+            </div>
+            <div class="list-row">
+              <span class="t-15">Repositorio (usuario/repo)</span>
+              <input id="cfgGhRepo" type="text" placeholder="Auto-detectado" class="input-clean" />
+            </div>
+            <div class="list-row" style="gap:8px;">
+              <button onclick="pullFromGitHub(true)" class="btn btn-subtle" style="flex:1; min-height:40px;">Descargar Nube</button>
+              <button onclick="pushToGitHub(true)" class="btn btn-primary" style="flex:1; min-height:40px;">Subir a Nube</button>
             </div>
           </div>
         </div>
 
         <!-- Integración con Apple Salud -->
         <div>
-          <span class="text-[11px] font-medium uppercase tracking-widest text-[var(--text-secondary)] px-2 block mb-1.5">Apple Salud (HealthKit)</span>
-          <div class="liquid-glass ios27-list">
-            <div class="ios27-row">
+          <span class="t-12 text-sec" style="display:block; margin-bottom:8px; padding-left:4px;">Apple Salud</span>
+          <div class="list-group">
+            <div class="list-row">
               <div>
-                <div class="text-[13px] text-white">Enviar cada plato a Apple Salud</div>
-                <div class="text-[11px] text-[var(--text-secondary)]">Ejecuta el atajo NutriOS Health Sync</div>
+                <div class="t-15">Guardar en Apple Salud automáticamente</div>
+                <div class="t-12 text-sec">Envía cada comida registrada a la app Salud</div>
               </div>
-              <div id="toggleHealth" onclick="toggleAutoHealth()" class="ios-toggle"></div>
+              <div id="switchHealth" onclick="toggleAutoHealth()" class="switch"></div>
             </div>
           </div>
         </div>
 
-        <!-- Motor de Inteligencia Artificial -->
+        <!-- Objetivos Diarios -->
         <div>
-          <span class="text-[11px] font-medium uppercase tracking-widest text-[var(--text-secondary)] px-2 block mb-1.5">Inteligencia Artificial</span>
-          <div class="liquid-glass ios27-list">
-            <div class="ios27-row">
-              <span class="text-[13px]">Clave API</span>
-              <input id="cfgApiKey" type="password" class="bg-transparent text-right text-[13px] text-white focus:outline-none w-48" />
+          <span class="t-12 text-sec" style="display:block; margin-bottom:8px; padding-left:4px;">Metas nutricionales</span>
+          <div class="list-group">
+            <div class="list-row">
+              <span class="t-15">Kcal (Entreno / Descanso)</span>
+              <div style="display:flex; gap:8px;">
+                <input id="tKcal" type="number" class="input-box" style="width:76px; height:36px; text-align:right;" />
+                <input id="rKcal" type="number" class="input-box" style="width:76px; height:36px; text-align:right;" />
+              </div>
             </div>
-            <div class="ios27-row">
-              <span class="text-[13px]">Modelo</span>
-              <select id="cfgModel" class="bg-transparent text-[13px] text-[var(--text-secondary)] text-right focus:outline-none">
-                <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-                <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-              </select>
+            <div class="list-row">
+              <span class="t-15">Proteína diaria (g)</span>
+              <input id="tProt" type="number" class="input-clean" />
+            </div>
+            <div class="list-row">
+              <span class="t-15">Carbos (Entreno / Descanso)</span>
+              <div style="display:flex; gap:8px;">
+                <input id="tCarb" type="number" class="input-box" style="width:76px; height:36px; text-align:right;" />
+                <input id="rCarb" type="number" class="input-box" style="width:76px; height:36px; text-align:right;" />
+              </div>
+            </div>
+            <div class="list-row">
+              <span class="t-15">Grasas diarias (g)</span>
+              <input id="tFat" type="number" class="input-clean" />
             </div>
           </div>
         </div>
 
-        <!-- Objetivos Nutricionales -->
+        <!-- Clave IA -->
         <div>
-          <span class="text-[11px] font-medium uppercase tracking-widest text-[var(--text-secondary)] px-2 block mb-1.5">Objetivos (Entreno / Descanso)</span>
-          <div class="liquid-glass ios27-list">
-            <div class="ios27-row"><span class="text-[13px]">Kcal Entreno / Descanso</span>
-              <div class="flex gap-2">
-                <input id="tKcal" type="number" class="w-16 bg-white/5 rounded-lg px-2 py-1 text-right text-[13px]" />
-                <input id="rKcal" type="number" class="w-16 bg-white/5 rounded-lg px-2 py-1 text-right text-[13px]" />
-              </div>
+          <span class="t-12 text-sec" style="display:block; margin-bottom:8px; padding-left:4px;">Motor Gemini IA</span>
+          <div class="list-group">
+            <div class="list-row">
+              <span class="t-15">API Key</span>
+              <input id="cfgApiKey" type="password" class="input-clean" />
             </div>
-            <div class="ios27-row"><span class="text-[13px]">Proteína (g)</span><input id="tProt" type="number" class="w-20 bg-transparent text-right text-[13px]" /></div>
-            <div class="ios27-row"><span class="text-[13px]">Carbos Entreno / Descanso</span>
-              <div class="flex gap-2">
-                <input id="tCarb" type="number" class="w-16 bg-white/5 rounded-lg px-2 py-1 text-right text-[13px]" />
-                <input id="rCarb" type="number" class="w-16 bg-white/5 rounded-lg px-2 py-1 text-right text-[13px]" />
-              </div>
-            </div>
-            <div class="ios27-row"><span class="text-[13px]">Grasas (g)</span><input id="tFat" type="number" class="w-20 bg-transparent text-right text-[13px]" /></div>
           </div>
         </div>
 
-        <button onclick="saveSettings()" class="w-full bg-white text-black font-semibold py-3.5 rounded-full text-[14px] active:scale-98 transition-transform">Guardar Configuración</button>
+        <button onclick="saveSettingsForm()" class="btn btn-primary" style="width:100%;">Guardar ajustes</button>
 
       </main>
 
     </div>
 
-    <!-- SHEET MODAL: ESCRIBIR COMIDA CON TEXTO -->
-    <div id="textModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-end justify-center">
-      <div class="w-full max-w-[390px] liquid-glass rounded-b-none rounded-t-[32px] p-5">
-        <div class="flex justify-between items-center mb-3">
-          <span class="text-[15px] font-semibold">Describir Plato</span>
-          <button onclick="toggleModal('textModal', false)" class="liquid-pill p-1.5 text-[var(--text-secondary)]">
-            <i data-lucide="X" class="w-4 h-4"></i>
-          </button>
+    <!-- MODAL ESCRIBIR COMIDA -->
+    <div id="textModal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:50; display:flex; align-items:flex-end; justify-content:center;">
+      <div class="card" style="width:100%; max-width:390px; border-bottom-left-radius:0; border-bottom-right-radius:0;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <span class="t-20">Describir plato</span>
+          <button onclick="toggleModal('textModal', false)" class="btn-subtle" style="width:32px; height:32px; border-radius:8px; border:none; cursor:pointer;">✕</button>
         </div>
-        <textarea id="nlPrompt" rows="3" placeholder="Ej: 200g de pechuga de pollo a la plancha con 250g de arroz blanco..." class="w-full bg-white/5 border border-white/10 rounded-2xl p-3 text-[13px] text-white focus:outline-none mb-3"></textarea>
-        <button onclick="submitTextMeal()" class="w-full bg-white text-black font-semibold py-3 rounded-full text-[13px]">Analizar y Guardar</button>
+        <textarea id="nlText" rows="3" placeholder="Ej: 200g de pechuga de pollo con 250g de arroz blanco..." class="input-box" style="height:88px; padding:12px; margin-bottom:12px;"></textarea>
+        <button onclick="analyzeTextMeal()" class="btn btn-primary" style="width:100%;">Analizar con IA</button>
       </div>
     </div>
 
-    <!-- SHEET MODAL: CREAR ACCIÓN RÁPIDA -->
-    <div id="presetModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-end justify-center">
-      <div class="w-full max-w-[390px] liquid-glass rounded-b-none rounded-t-[32px] p-5 space-y-2.5">
-        <div class="flex justify-between items-center mb-1">
-          <span class="text-[15px] font-semibold">Nueva Acción Rápida</span>
-          <button onclick="toggleModal('presetModal', false)" class="liquid-pill p-1.5 text-[var(--text-secondary)]">
-            <i data-lucide="X" class="w-4 h-4"></i>
-          </button>
+    <!-- MODAL NUEVA ACCIÓN RÁPIDA -->
+    <div id="presetModal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:50; display:flex; align-items:flex-end; justify-content:center;">
+      <div class="card stack-8" style="width:100%; max-width:390px; border-bottom-left-radius:0; border-bottom-right-radius:0;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <span class="t-20">Nueva acción rápida</span>
+          <button onclick="toggleModal('presetModal', false)" class="btn-subtle" style="width:32px; height:32px; border-radius:8px; border:none; cursor:pointer;">✕</button>
         </div>
-        <input id="pName" type="text" placeholder="Nombre (ej. Batido Desayuno)" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-[13px] text-white" />
-        <div class="grid grid-cols-2 gap-2">
-          <input id="pWeight" type="number" placeholder="Peso (g)" class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-[13px] text-white" />
-          <input id="pKcal" type="number" placeholder="Calorías (kcal)" class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-[13px] text-white" />
+        <input id="pName" type="text" placeholder="Nombre (ej. Batido Desayuno)" class="input-box" />
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <input id="pWeight" type="number" placeholder="Peso (g)" class="input-box" />
+          <input id="pKcal" type="number" placeholder="Kcal" class="input-box" />
         </div>
-        <div class="grid grid-cols-3 gap-2">
-          <input id="pProt" type="number" placeholder="Prot (g)" class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-[13px] text-white" />
-          <input id="pCarb" type="number" placeholder="Carb (g)" class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-[13px] text-white" />
-          <input id="pFat" type="number" placeholder="Grasa (g)" class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-[13px] text-white" />
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+          <input id="pProt" type="number" placeholder="Prot (g)" class="input-box" />
+          <input id="pCarb" type="number" placeholder="Carb (g)" class="input-box" />
+          <input id="pFat" type="number" placeholder="Grasa (g)" class="input-box" />
         </div>
-        <button onclick="saveNewPreset()" class="w-full bg-white text-black font-semibold py-3 rounded-full text-[13px] mt-1">Añadir a Inicio</button>
+        <button onclick="createPreset()" class="btn btn-primary" style="width:100%; margin-top:8px;">Guardar acción rápida</button>
       </div>
     </div>
 
-    <!-- CÁPSULA FLOTANTE LIQUID GLASS iOS 27 (BARRA INFERIOR) -->
-    <div class="ios27-tabbar-wrap">
-      <nav id="floatingTabbar" class="ios27-tabbar">
-        <button onclick="switchTab('today')" id="nav-today" class="tab-item active">
-          <i data-lucide="CircleDot" class="w-[18px] h-[18px]"></i>
-          <span class="text-[10px] font-medium">Hoy</span>
+    <!-- BARRA DE NAVEGACIÓN INFERIOR COMPACTA -->
+    <div class="bottom-bar-wrap">
+      <nav class="bottom-bar">
+        <button onclick="switchTab('today')" id="nav-today" class="nav-tab active">
+          <i data-lucide="LayoutGrid" style="width:18px; height:18px;"></i>
+          <span class="t-12">Hoy</span>
         </button>
 
-        <!-- Botón de Cámara Prominente en el Centro -->
-        <label class="camera-prominent" title="Fotografiar Comida">
-          <i data-lucide="Camera" class="w-5 h-5"></i>
+        <!-- Botón de Cámara Directo -->
+        <label class="cam-trigger" title="Fotografiar plato">
+          <i data-lucide="Camera" style="width:20px; height:20px;"></i>
           <input type="file" accept="image/*" capture="environment" class="hidden" onchange="handlePhoto(event)" />
         </label>
 
-        <button onclick="switchTab('analytics')" id="nav-analytics" class="tab-item">
-          <i data-lucide="BarChart2" class="w-[18px] h-[18px]"></i>
-          <span class="text-[10px] font-medium">Historial</span>
+        <button onclick="switchTab('analytics')" id="nav-analytics" class="nav-tab">
+          <i data-lucide="BarChart2" style="width:18px; height:18px;"></i>
+          <span class="t-12">Historial</span>
         </button>
 
-        <button onclick="switchTab('settings')" id="nav-settings" class="tab-item">
-          <i data-lucide="SlidersHorizontal" class="w-[18px] h-[18px]"></i>
-          <span class="text-[10px] font-medium">Ajustes</span>
+        <button onclick="switchTab('settings')" id="nav-settings" class="nav-tab">
+          <i data-lucide="SlidersHorizontal" style="width:18px; height:18px;"></i>
+          <span class="t-12">Ajustes</span>
         </button>
       </nav>
     </div>
@@ -656,42 +710,40 @@
   </div>
 
   <script>
-    // Clave API preconfigurada por defecto para que funcione nada más abrir
-    const DEFAULT_API_KEY = "AQ.Ab8RN6L0-ZdixXqTBolg3miIH5DsFRkCI_lIxCB2XHucKldJcA";
+    // Credenciales preconfiguradas para que funcione sin fricción
+    const DEFAULT_GEMINI_KEY = "AQ.Ab8RN6L0-ZdixXqTBolg3miIH5DsFRkCI_lIxCB2XHucKldJcA";
+    const DEFAULT_GH_TOKEN   = "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";
     const todayKey = new Date().toISOString().split('T')[0];
 
-    document.getElementById('lblDate').textContent = new Date().toLocaleDateString('es-ES', {
+    // Autodetecta usuario/repo cuando se abre desde tu URL de GitHub Pages (https://usuario.github.io/repo/)
+    function detectGitHubRepo() {
+      const host = window.location.hostname;
+      const path = window.location.pathname.split('/').filter(Boolean);
+      if (host.endsWith('.github.io') && path.length > 0) {
+        const user = host.split('.')[0];
+        return `${user}/${path[0]}`;
+      }
+      return '';
+    }
+
+    document.getElementById('dateLabel').textContent = new Date().toLocaleDateString('es-ES', {
       weekday: 'long', day: 'numeric', month: 'short'
     });
 
-    // Efecto dinámico de iOS 27: la barra flotante se encoge al hacer scroll hacia abajo
-    let lastScrollY = 0;
-    document.getElementById('scrollStage').addEventListener('scroll', (e) => {
-      const currentY = e.target.scrollTop;
-      const bar = document.getElementById('floatingTabbar');
-      if (currentY > lastScrollY + 12 && currentY > 40) {
-        bar.classList.add('minimized');
-      } else if (currentY < lastScrollY - 8 || currentY <= 20) {
-        bar.classList.remove('minimized');
-      }
-      lastScrollY = currentY;
-    });
-
-    const defaultState = {
+    const initialData = {
       cfg: {
+        theme: 'dark',
         mode: 'train',
-        model: 'gemini-2.5-flash',
-        glassOpacity: 0.58,
         autoHealth: false,
-        ghToken: '',
-        ghRepo: '',
+        ghToken: DEFAULT_GH_TOKEN,
+        ghRepo: detectGitHubRepo(),
+        apiKey: DEFAULT_GEMINI_KEY,
         train: { kcal: 2950, prot: 170, carb: 365, fat: 88 },
         rest:  { kcal: 2550, prot: 170, carb: 275, fat: 82 }
       },
       presets: [
         {
-          id: 'shake_default',
-          icon: 'CupSoda',
+          id: 'shake_1',
           name: 'Batido Desayuno',
           weight: 550,
           kcal: 780,
@@ -702,8 +754,7 @@
           items: ['Leche', 'Avena', 'Crema de cacahuete', 'Plátano']
         },
         {
-          id: 'chicken_rice',
-          icon: 'Utensils',
+          id: 'chicken_1',
           name: 'Pollo y Arroz',
           weight: 420,
           kcal: 610,
@@ -718,44 +769,57 @@
     };
 
     function getStore() {
-      const raw = localStorage.getItem('nutrios27_store');
+      const raw = localStorage.getItem('nutrios_hig_store');
       if (!raw) {
-        localStorage.setItem('nutrios27_store', JSON.stringify(defaultState));
-        return defaultState;
+        localStorage.setItem('nutrios_hig_store', JSON.stringify(initialData));
+        return initialData;
       }
       const parsed = JSON.parse(raw);
-      return {
-        cfg: { ...defaultState.cfg, ...(parsed.cfg || {}) },
-        presets: parsed.presets || defaultState.presets,
-        days: parsed.days || {}
-      };
+      if (!parsed.cfg.ghToken) parsed.cfg.ghToken = DEFAULT_GH_TOKEN;
+      if (!parsed.cfg.ghRepo)  parsed.cfg.ghRepo  = detectGitHubRepo();
+      if (!parsed.cfg.apiKey)  parsed.cfg.apiKey  = DEFAULT_GEMINI_KEY;
+      return parsed;
     }
 
-    function saveStore(store, pushToCloud = true) {
-      localStorage.setItem('nutrios27_store', JSON.stringify(store));
+    function saveStore(store, syncCloud = true) {
+      localStorage.setItem('nutrios_hig_store', JSON.stringify(store));
       render();
-      if (pushToCloud && store.cfg.ghToken && store.cfg.ghRepo) {
-        syncCloudDB(false);
-      }
+      if (syncCloud) pushToGitHub(false);
     }
 
-    function getApiKey() {
-      return localStorage.getItem('nutrios27_apikey') || DEFAULT_API_KEY;
-    }
-
-    function getTodayObj(store) {
+    function getToday(store) {
       if (!store.days[todayKey]) {
         store.days[todayKey] = { meals: [], water: 0, weight: null };
       }
       return store.days[todayKey];
     }
 
-    // Slider de Liquid Glass de iOS 27
-    function updateGlassTint(val) {
-      document.documentElement.style.setProperty('--glass-opacity', val);
+    // Gestión de Modo Claro / Oscuro
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      document.getElementById('themeColorMeta').setAttribute('content', theme === 'dark' ? '#000000' : '#F5F5F7');
+      const icon = document.getElementById('themeIcon');
+      if (icon) icon.setAttribute('data-lucide', theme === 'dark' ? 'Sun' : 'Moon');
+      const thLight = document.getElementById('thLight');
+      const thDark  = document.getElementById('thDark');
+      if (thLight && thDark) {
+        thLight.classList.toggle('active', theme === 'light');
+        thDark.classList.toggle('active', theme === 'dark');
+      }
+      lucide.createIcons();
+    }
+
+    function setTheme(theme) {
       const store = getStore();
-      store.cfg.glassOpacity = parseFloat(val);
+      store.cfg.theme = theme;
+      applyTheme(theme);
       saveStore(store, false);
+    }
+
+    function cycleTheme() {
+      const store = getStore();
+      const next = store.cfg.theme === 'dark' ? 'light' : 'dark';
+      setTheme(next);
     }
 
     function switchTab(tab) {
@@ -764,33 +828,52 @@
         document.getElementById(`nav-${t}`).classList.toggle('active', t === tab);
       });
       const titles = { today: 'Hoy', analytics: 'Historial', settings: 'Ajustes' };
-      document.getElementById('lblTitle').textContent = titles[tab];
-      if (tab === 'settings') populateSettings();
+      document.getElementById('pageTitle').textContent = titles[tab];
+      if (tab === 'settings') loadSettingsForm();
       if (tab === 'analytics') renderAnalytics();
       lucide.createIcons();
     }
 
-    function setMode(mode) {
+    function setDayMode(mode) {
       const store = getStore();
       store.cfg.mode = mode;
-      saveStore(store);
+      saveStore(store, false);
     }
 
     function toggleModal(id, show) {
       document.getElementById(id).classList.toggle('hidden', !show);
     }
 
-    function openPresetCreator() {
-      toggleModal('presetModal', true);
+    // Acciones Rápidas en 1 Toque (Desayuno Batido, etc.)
+    function logPreset(id) {
+      const store = getStore();
+      const p = store.presets.find(x => x.id === id);
+      if (!p) return;
+      const today = getToday(store);
+      const meal = {
+        id: Date.now(),
+        name: p.name,
+        time: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+        scale: 1,
+        baseWeight: p.weight,
+        baseKcal: p.kcal,
+        baseProt: p.prot,
+        baseCarb: p.carb,
+        baseFat: p.fat,
+        baseFiber: p.fiber || 4,
+        items: p.items || []
+      };
+      today.meals.unshift(meal);
+      saveStore(store, true);
+      if (store.cfg.autoHealth) sendToAppleHealth(meal);
     }
 
-    function saveNewPreset() {
+    function createPreset() {
       const name = document.getElementById('pName').value.trim();
       if (!name) return;
       const store = getStore();
       store.presets.push({
         id: 'p_' + Date.now(),
-        icon: 'Utensils',
         name,
         weight: Number(document.getElementById('pWeight').value) || 350,
         kcal: Number(document.getElementById('pKcal').value) || 500,
@@ -798,177 +881,168 @@
         carb: Number(document.getElementById('pCarb').value) || 50,
         fat: Number(document.getElementById('pFat').value) || 15,
         fiber: 4,
-        items: ['Acción rápida']
+        items: []
       });
       ['pName','pWeight','pKcal','pProt','pCarb','pFat'].forEach(i => document.getElementById(i).value = '');
       toggleModal('presetModal', false);
-      saveStore(store);
+      saveStore(store, true);
     }
 
-    // Registrar Batido o Acción Rápida en 1 Toque (Guarda en Cloud DB + Salud)
-    function triggerQuickPreset(id) {
+    function addWater(l) {
       const store = getStore();
-      const preset = store.presets.find(p => p.id === id);
-      if (!preset) return;
-      const today = getTodayObj(store);
-
-      const entry = {
-        id: Date.now(),
-        name: preset.name,
-        time: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
-        scale: 1,
-        baseWeight: preset.weight,
-        baseKcal: preset.kcal,
-        baseProt: preset.prot,
-        baseCarb: preset.carb,
-        baseFat: preset.fat,
-        baseFiber: preset.fiber || 4,
-        items: preset.items || []
-      };
-
-      today.meals.unshift(entry);
-      saveStore(store);
-
-      if (store.cfg.autoHealth) {
-        syncAppleHealth(entry);
-      }
-    }
-
-    function addWater(liters) {
-      const store = getStore();
-      const today = getTodayObj(store);
-      today.water = Math.max(0, +(today.water + liters).toFixed(2));
-      saveStore(store);
+      const today = getToday(store);
+      today.water = Math.max(0, +(today.water + l).toFixed(2));
+      saveStore(store, true);
     }
 
     function saveWeight() {
-      const val = parseFloat(document.getElementById('inpWeight').value);
+      const val = parseFloat(document.getElementById('weightInput').value);
       if (!val) return;
       const store = getStore();
-      const today = getTodayObj(store);
+      const today = getToday(store);
       today.weight = val;
-      document.getElementById('inpWeight').value = '';
-      saveStore(store);
+      document.getElementById('weightInput').value = '';
+      saveStore(store, true);
     }
 
-    function updateMealScale(mealId, scale) {
+    function scaleMeal(id, val) {
       const store = getStore();
-      const today = getTodayObj(store);
-      today.meals = today.meals.map(m => m.id === mealId ? { ...m, scale: parseFloat(scale) } : m);
-      saveStore(store);
+      const today = getToday(store);
+      today.meals = today.meals.map(m => m.id === id ? { ...m, scale: parseFloat(val) } : m);
+      saveStore(store, true);
     }
 
-    function deleteMeal(mealId) {
+    function removeMeal(id) {
       const store = getStore();
-      const today = getTodayObj(store);
-      today.meals = today.meals.filter(m => m.id !== mealId);
-      saveStore(store);
+      const today = getToday(store);
+      today.meals = today.meals.filter(m => m.id !== id);
+      saveStore(store, true);
     }
 
-    // BASE DE DATOS EN GITHUB (Guarda y lee el archivo nutrios-db.json en tu propio repositorio)
-    async function syncCloudDB(manualNotify = false) {
-      const store = getStore();
-      const { ghToken, ghRepo } = store.cfg;
-      const dot = document.getElementById('cloudStatusDot');
-      const btnTxt = document.getElementById('cloudBtnText');
-
-      if (!ghToken || !ghRepo) {
-        if (manualNotify) {
-          switchTab('settings');
-          alert('Configura tu GitHub Token y el nombre de tu repositorio (usuario/repo) en Ajustes para activar la base de datos en la nube.');
-        }
-        return;
+    // =========================================================================
+    // BASE DE DATOS AUTOMÁTICA EN GITHUB (Auto-descubre el repo si está vacío)
+    // =========================================================================
+    async function resolveRepo(store) {
+      if (store.cfg.ghRepo && store.cfg.ghRepo.includes('/')) return store.cfg.ghRepo;
+      const detected = detectGitHubRepo();
+      if (detected) {
+        store.cfg.ghRepo = detected;
+        return detected;
       }
+      // Si se abre fuera de github.io, consulta los repos accesibles por el Token
+      const res = await fetch('https://api.github.com/user/repos?per_page=10&sort=updated', {
+        headers: { 'Authorization': `Bearer ${store.cfg.ghToken}`, 'Accept': 'application/vnd.github+json' }
+      });
+      if (res.ok) {
+        const repos = await res.json();
+        if (repos.length > 0) {
+          store.cfg.ghRepo = repos[0].full_name;
+          localStorage.setItem('nutrios_hig_store', JSON.stringify(store));
+          return store.cfg.ghRepo;
+        }
+      }
+      return '';
+    }
+
+    async function pushToGitHub(showAlert = false) {
+      const store = getStore();
+      const token = store.cfg.ghToken;
+      if (!token) return;
+
+      const dot = document.getElementById('syncDot');
+      const txt = document.getElementById('syncStatusText');
 
       try {
-        dot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse';
-        btnTxt.textContent = 'Sincronizando...';
+        const repo = await resolveRepo(store);
+        if (!repo) {
+          if (showAlert) alert('Escribe tu usuario/repo en Ajustes.');
+          return;
+        }
 
-        const apiUrl = `https://api.github.com/repos/${ghRepo}/contents/nutrios-db.json`;
+        dot.style.background = 'var(--status-warn)';
+        txt.textContent = 'Guardando...';
+
+        const url = `https://api.github.com/repos/${repo}/contents/nutrios-db.json`;
         const headers = {
-          'Authorization': `Bearer ${ghToken}`,
+          'Authorization': `Bearer ${token}`,
           'Accept': 'application/vnd.github+json'
         };
 
-        // 1. Comprobar si ya existe el archivo para obtener su SHA
         let sha = null;
-        const getRes = await fetch(apiUrl, { headers });
+        const getRes = await fetch(url, { headers });
         if (getRes.ok) {
-          const existing = await getRes.json();
-          sha = existing.sha;
+          const fileData = await getRes.json();
+          sha = fileData.sha;
         }
 
-        // 2. Codificar la base de datos completa en Base64 UTF-8
-        const payloadObj = {
+        const payload = {
           updatedAt: new Date().toISOString(),
           presets: store.presets,
           days: store.days
         };
-        const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(payloadObj, null, 2))));
+        const content = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
 
-        const putRes = await fetch(apiUrl, {
+        const putRes = await fetch(url, {
           method: 'PUT',
           headers: { ...headers, 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            message: `Sync NutriOS DB ${todayKey}`,
-            content: contentBase64,
+            message: `Update NutriOS DB (${todayKey})`,
+            content,
             ...(sha ? { sha } : {})
           })
         });
 
         if (putRes.ok) {
-          dot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400';
-          btnTxt.textContent = 'GitHub OK';
-          if (manualNotify) alert('Base de datos guardada en tu repositorio de GitHub correctamente.');
+          dot.style.background = 'var(--status-ok)';
+          txt.textContent = 'GitHub OK';
+          if (showAlert) alert(`Guardado correctamente en ${repo}/nutrios-db.json`);
         } else {
-          throw new Error('GitHub API error');
+          throw new Error('Permiso denegado o repo incorrecto');
         }
-      } catch (err) {
-        dot.className = 'w-1.5 h-1.5 rounded-full bg-rose-400';
-        btnTxt.textContent = 'Error Cloud';
-        if (manualNotify) alert('Error al sincronizar con GitHub. Revisa el Token y que el repositorio exista.');
+      } catch (e) {
+        dot.style.background = 'var(--danger)';
+        txt.textContent = 'Error Sync';
+        if (showAlert) alert('No se pudo guardar en GitHub: ' + e.message);
       }
     }
 
-    async function pullFromGitHub() {
+    async function pullFromGitHub(showAlert = false) {
       const store = getStore();
-      const { ghToken, ghRepo } = store.cfg;
-      if (!ghToken || !ghRepo) {
-        alert('Introduce primero tu GitHub Token y usuario/repo.');
-        return;
-      }
-
+      if (!store.cfg.ghToken) return;
       try {
-        const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/nutrios-db.json`, {
-          headers: { 'Authorization': `Bearer ${ghToken}`, 'Accept': 'application/vnd.github+json' }
+        const repo = await resolveRepo(store);
+        if (!repo) return;
+        const res = await fetch(`https://api.github.com/repos/${repo}/contents/nutrios-db.json`, {
+          headers: { 'Authorization': `Bearer ${store.cfg.ghToken}`, 'Accept': 'application/vnd.github+json' }
         });
-        if (!res.ok) throw new Error('No encontrado');
+        if (!res.ok) return;
         const data = await res.json();
         const decoded = JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g, '')))));
-
-        if (decoded.days) store.days = { ...store.days, ...decoded.days };
+        if (decoded.days) store.days = { ... decoded.days, ...store.days };
         if (decoded.presets) store.presets = decoded.presets;
         saveStore(store, false);
-        alert('Datos restaurados desde GitHub correctamente.');
+        document.getElementById('syncDot').style.background = 'var(--status-ok)';
+        document.getElementById('syncStatusText').textContent = 'GitHub OK';
+        if (showAlert) alert('Base de datos descargada de GitHub.');
       } catch (e) {
-        alert('No se encontró nutrios-db.json en el repositorio o el Token no tiene permisos.');
+        if (showAlert) alert('Todavía no existe nutrios-db.json en tu repositorio. Se creará al registrar tu primera comida.');
       }
     }
 
-    // Puente con Apple Salud (Atajos de iOS)
-    function syncAppleHealth(singleEntry = null) {
+    // Puente Apple Salud
+    function sendToAppleHealth(singleMeal = null) {
       const store = getStore();
-      const today = getTodayObj(store);
-
+      const today = getToday(store);
       let payload;
-      if (singleEntry) {
+
+      if (singleMeal) {
         payload = {
           date: todayKey,
-          calories: Math.round(singleEntry.baseKcal * singleEntry.scale),
-          protein: Math.round(singleEntry.baseProt * singleEntry.scale),
-          carbs: Math.round(singleEntry.baseCarb * singleEntry.scale),
-          fat: Math.round(singleEntry.baseFat * singleEntry.scale),
-          fiber: Math.round((singleEntry.baseFiber || 0) * singleEntry.scale),
+          calories: Math.round(singleMeal.baseKcal * singleMeal.scale),
+          protein: Math.round(singleMeal.baseProt * singleMeal.scale),
+          carbs: Math.round(singleMeal.baseCarb * singleMeal.scale),
+          fat: Math.round(singleMeal.baseFat * singleMeal.scale),
+          fiber: Math.round((singleMeal.baseFiber || 0) * singleMeal.scale),
           waterLiters: today.water,
           weightKg: today.weight || ''
         };
@@ -988,8 +1062,8 @@
       window.location.href = `shortcuts://run-shortcut?name=${encodeURIComponent('NutriOS Health Sync')}&input=text&text=${encoded}`;
     }
 
-    // Compresión de fotografía e inferencia con IA
-    function compressImage(file, maxW = 960) {
+    // Análisis de Imagen con Gemini Vision
+    function compressPhoto(file, maxW = 960) {
       return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -1010,10 +1084,10 @@
       });
     }
 
-    async function analyzeWithGemini(parts, thumb = null) {
-      const apiKey = getApiKey();
+    async function callGemini(parts, thumb = null) {
       const store = getStore();
-      document.getElementById('aiLoader').classList.remove('hidden');
+      const apiKey = store.cfg.apiKey || DEFAULT_GEMINI_KEY;
+      document.getElementById('aiLoading').classList.remove('hidden');
 
       const schema = {
         type: "OBJECT",
@@ -1031,7 +1105,7 @@
       };
 
       try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${store.cfg.model}:generateContent?key=${apiKey}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1046,12 +1120,12 @@
 
         const json = await res.json();
         if (!json.candidates || !json.candidates[0]) {
-          throw new Error(json.error?.message || 'Respuesta inválida del modelo');
+          throw new Error(json.error?.message || 'Error en la respuesta de la API');
         }
         const data = JSON.parse(json.candidates[0].content.parts[0].text);
 
-        const today = getTodayObj(store);
-        const newMeal = {
+        const today = getToday(store);
+        const meal = {
           id: Date.now(),
           name: data.dishName,
           time: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
@@ -1066,16 +1140,16 @@
           items: data.ingredients
         };
 
-        today.meals.unshift(newMeal);
-        saveStore(store); // Guarda en local y sube automáticamente a GitHub Cloud DB
+        today.meals.unshift(meal);
+        saveStore(store, true); // Guarda automáticamente en GitHub
 
         if (store.cfg.autoHealth) {
-          syncAppleHealth(newMeal);
+          sendToAppleHealth(meal);
         }
       } catch (err) {
-        alert('No se pudo procesar con la clave API actual (' + err.message + '). Verifica que sea una clave de Google AI Studio en Ajustes.');
+        alert('Error al analizar con la clave API (' + err.message + '). Revisa Ajustes.');
       } finally {
-        document.getElementById('aiLoader').classList.add('hidden');
+        document.getElementById('aiLoading').classList.add('hidden');
       }
     }
 
@@ -1083,39 +1157,38 @@
       const file = event.target.files[0];
       if (!file) return;
       switchTab('today');
-      const { base64, thumb } = await compressImage(file);
-      await analyzeWithGemini([
-        { text: "Actúa como nutricionista deportivo. Analiza la foto del plato, estima el peso en gramos de cada alimento y devuelve calorías, proteínas, carbohidratos, grasas y fibra en español." },
+      const { base64, thumb } = await compressPhoto(file);
+      await callGemini([
+        { text: "Analiza la foto de este plato. Estima el peso en gramos de cada ingrediente y calcula las calorías, proteínas, carbohidratos, grasas y fibra totales en español." },
         { inlineData: { mimeType: "image/jpeg", data: base64 } }
       ], thumb);
       event.target.value = '';
     }
 
-    async function submitTextMeal() {
-      const txt = document.getElementById('nlPrompt').value.trim();
+    async function analyzeTextMeal() {
+      const txt = document.getElementById('nlText').value.trim();
       if (!txt) return;
-      document.getElementById('nlPrompt').value = '';
+      document.getElementById('nlText').value = '';
       toggleModal('textModal', false);
-      await analyzeWithGemini([
-        { text: `Calcula peso total en gramos, calorías y macronutrientes para esta comida en español: "${txt}"` }
+      await callGemini([
+        { text: `Calcula peso total en gramos, calorías y macronutrientes de esta comida en español: "${txt}"` }
       ]);
     }
 
+    // Ajustes
     function toggleAutoHealth() {
       const store = getStore();
       store.cfg.autoHealth = !store.cfg.autoHealth;
       saveStore(store, false);
-      populateSettings();
+      loadSettingsForm();
     }
 
-    function populateSettings() {
+    function loadSettingsForm() {
       const store = getStore();
-      document.getElementById('glassSlider').value = store.cfg.glassOpacity || 0.58;
       document.getElementById('cfgGhToken').value = store.cfg.ghToken || '';
-      document.getElementById('cfgGhRepo').value = store.cfg.ghRepo || '';
-      document.getElementById('cfgApiKey').value = getApiKey();
-      document.getElementById('cfgModel').value = store.cfg.model;
-      document.getElementById('toggleHealth').classList.toggle('on', !!store.cfg.autoHealth);
+      document.getElementById('cfgGhRepo').value  = store.cfg.ghRepo || detectGitHubRepo();
+      document.getElementById('cfgApiKey').value  = store.cfg.apiKey || DEFAULT_GEMINI_KEY;
+      document.getElementById('switchHealth').classList.toggle('on', !!store.cfg.autoHealth);
 
       document.getElementById('tKcal').value = store.cfg.train.kcal;
       document.getElementById('rKcal').value = store.cfg.rest.kcal;
@@ -1123,16 +1196,14 @@
       document.getElementById('tCarb').value = store.cfg.train.carb;
       document.getElementById('rCarb').value = store.cfg.rest.carb;
       document.getElementById('tFat').value  = store.cfg.train.fat;
+      applyTheme(store.cfg.theme || 'dark');
     }
 
-    function saveSettings() {
+    function saveSettingsForm() {
       const store = getStore();
-      const key = document.getElementById('cfgApiKey').value.trim();
-      if (key) localStorage.setItem('nutrios27_apikey', key);
-
       store.cfg.ghToken = document.getElementById('cfgGhToken').value.trim();
       store.cfg.ghRepo  = document.getElementById('cfgGhRepo').value.trim();
-      store.cfg.model   = document.getElementById('cfgModel').value;
+      store.cfg.apiKey  = document.getElementById('cfgApiKey').value.trim();
 
       const prot = Number(document.getElementById('tProt').value) || 170;
       const fat  = Number(document.getElementById('tFat').value) || 88;
@@ -1148,42 +1219,41 @@
         carb: Number(document.getElementById('rCarb').value) || 275,
         fat
       };
-
-      saveStore(store);
+      saveStore(store, true);
       switchTab('today');
     }
 
     function renderAnalytics() {
       const store = getStore();
-      const targetKcal = store.cfg[store.cfg.mode].kcal;
-
+      const target = store.cfg[store.cfg.mode].kcal;
       const days7 = [];
+
       for (let i = 6; i >= 0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);
         const k = d.toISOString().split('T')[0];
-        const lbl = d.toLocaleDateString('es-ES', { weekday: 'short' }).slice(0, 2).toUpperCase();
-        const dayObj = store.days[k] || { meals: [], weight: null };
-        const kcal = dayObj.meals.reduce((a, m) => a + Math.round(m.baseKcal * m.scale), 0);
-        const prot = dayObj.meals.reduce((a, m) => a + Math.round(m.baseProt * m.scale), 0);
-        days7.push({ k, lbl, kcal, prot });
+        const lbl = d.toLocaleDateString('es-ES', { weekday: 'short' }).slice(0, 2);
+        const obj = store.days[k] || { meals: [], weight: null };
+        const kcal = obj.meals.reduce((a, m) => a + Math.round(m.baseKcal * m.scale), 0);
+        const prot = obj.meals.reduce((a, m) => a + Math.round(m.baseProt * m.scale), 0);
+        days7.push({ lbl, kcal, prot });
       }
 
       const active = days7.filter(d => d.kcal > 0);
-      document.getElementById('avgKcal7d').textContent = `${active.length ? Math.round(active.reduce((a,b)=>a+b.kcal,0)/active.length) : 0} kcal`;
-      document.getElementById('avgProt7d').textContent = `${active.length ? Math.round(active.reduce((a,b)=>a+b.prot,0)/active.length) : 0} g`;
-      document.getElementById('activeDays7d').textContent = `${active.length} / 7`;
+      document.getElementById('avgKcal7d').textContent = active.length ? Math.round(active.reduce((a,b)=>a+b.kcal,0)/active.length) : 0;
+      document.getElementById('avgProt7d').textContent = (active.length ? Math.round(active.reduce((a,b)=>a+b.prot,0)/active.length) : 0) + 'g';
+      document.getElementById('daysLogged7d').textContent = `${active.length}/7`;
 
-      const maxVal = Math.max(targetKcal * 1.15, ...days7.map(d => d.kcal), 1000);
-      document.getElementById('chartBars').innerHTML = days7.map(d => {
+      const maxVal = Math.max(target * 1.15, ...days7.map(d => d.kcal), 1000);
+      document.getElementById('chart7d').innerHTML = days7.map(d => {
         const h = Math.min(100, Math.round((d.kcal / maxVal) * 100));
         return `
-          <div class="flex-1 flex flex-col items-center h-full justify-end">
-            <span class="text-[9px] text-[var(--text-secondary)] mb-1">${d.kcal || ''}</span>
-            <div class="w-full max-w-[20px] bg-white/10 rounded-full h-24 flex items-end overflow-hidden p-0.5">
-              <div class="bg-white w-full rounded-full transition-all duration-500" style="height:${h}%"></div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; height:100%; justify-content:flex-end;">
+            <span class="t-12 text-sec" style="margin-bottom:4px;">${d.kcal || ''}</span>
+            <div style="width:100%; max-width:24px; height:84px; background:var(--bar-track); border-radius:6px; display:flex; align-items:flex-end; overflow:hidden;">
+              <div style="width:100%; height:${h}%; background:var(--accent); border-radius:6px;"></div>
             </div>
-            <span class="text-[10px] font-medium text-[var(--text-secondary)] mt-1.5">${d.lbl}</span>
+            <span class="t-12 text-sec" style="margin-top:6px; text-transform:capitalize;">${d.lbl}</span>
           </div>
         `;
       }).join('');
@@ -1193,17 +1263,17 @@
         .sort(([a],[b]) => b.localeCompare(a))
         .slice(0, 7);
 
-      document.getElementById('weightList').innerHTML = weights.length
-        ? weights.map(([dt, obj]) => `<div class="py-2.5 flex justify-between"><span>${dt}</span><strong class="text-white">${obj.weight} kg</strong></div>`).join('')
-        : `<p class="text-[var(--text-secondary)] py-2">Sin registros de peso todavía.</p>`;
+      document.getElementById('weightHistoryList').innerHTML = weights.length
+        ? weights.map(([dt, v]) => `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border);"><span class="t-15 text-sec">${dt}</span><span class="t-15-sb">${v.weight} kg</span></div>`).join('')
+        : `<p class="t-15 text-sec">Sin registros de peso todavía.</p>`;
     }
 
     function render() {
       const store = getStore();
-      document.documentElement.style.setProperty('--glass-opacity', store.cfg.glassOpacity || 0.58);
+      applyTheme(store.cfg.theme || 'dark');
 
       const goals = store.cfg[store.cfg.mode];
-      const today = getTodayObj(store);
+      const today = getToday(store);
 
       document.getElementById('btnTrain').classList.toggle('active', store.cfg.mode === 'train');
       document.getElementById('btnRest').classList.toggle('active', store.cfg.mode === 'rest');
@@ -1217,84 +1287,80 @@
         fiber += Math.round((m.baseFiber || 0) * m.scale);
       });
 
-      const circ = 314.16;
-      document.getElementById('kcalRing').style.strokeDashoffset = circ - Math.min(1, kcal / goals.kcal) * circ;
+      document.getElementById('kcalCurrent').textContent = kcal;
+      document.getElementById('kcalTarget').textContent  = `/ ${goals.kcal} kcal`;
+      document.getElementById('protCurrent').textContent = prot;
+      document.getElementById('protTarget').textContent  = goals.prot;
+      document.getElementById('carbCurrent').textContent = carb;
+      document.getElementById('carbTarget').textContent  = goals.carb;
+      document.getElementById('fatCurrent').textContent  = fat;
+      document.getElementById('fatTarget').textContent   = goals.fat;
+      document.getElementById('fiberLabel').textContent  = `Fibra: ${fiber}g`;
 
-      document.getElementById('valKcal').textContent = kcal;
-      document.getElementById('lblKcalGoal').textContent = `/ ${goals.kcal} kcal`;
-      document.getElementById('valProt').textContent = prot;
-      document.getElementById('goalProt').textContent = goals.prot;
-      document.getElementById('valCarb').textContent = carb;
-      document.getElementById('goalCarb').textContent = goals.carb;
-      document.getElementById('valFat').textContent  = fat;
-      document.getElementById('goalFat').textContent  = goals.fat;
-
+      document.getElementById('barKcal').style.width = `${Math.min(100, (kcal / goals.kcal) * 100)}%`;
       document.getElementById('barProt').style.width = `${Math.min(100, (prot / goals.prot) * 100)}%`;
       document.getElementById('barCarb').style.width = `${Math.min(100, (carb / goals.carb) * 100)}%`;
       document.getElementById('barFat').style.width  = `${Math.min(100, (fat / goals.fat) * 100)}%`;
 
       const rem = goals.kcal - kcal;
-      document.getElementById('lblRemaining').textContent =
-        `${rem >= 0 ? `Restan ${rem} kcal` : `+${Math.abs(rem)} kcal superávit`} · Fibra ${fiber}g`;
+      const remEl = document.getElementById('kcalRemaining');
+      remEl.textContent = rem >= 0 ? `Restan ${rem} kcal` : `+${Math.abs(rem)} kcal`;
+      remEl.style.color = rem >= 0 ? 'var(--status-ok)' : 'var(--status-warn)';
 
-      document.getElementById('valWater').textContent = today.water.toFixed(2);
-      document.getElementById('valWeight').textContent = today.weight || '--';
+      document.getElementById('waterVal').textContent  = today.water.toFixed(2);
+      document.getElementById('weightVal').textContent = today.weight || '--';
 
-      // Píldoras de Acción Rápida (1 Toque)
-      document.getElementById('quickPresetsRow').innerHTML = store.presets.map(p => `
-        <button onclick="triggerQuickPreset('${p.id}')" class="liquid-pill px-3.5 py-2 shrink-0 flex items-center gap-2.5">
-          <i data-lucide="${p.icon || 'Utensils'}" class="w-3.5 h-3.5 text-white/80"></i>
-          <div class="text-left">
-            <span class="text-[12px] font-semibold text-white block leading-tight">${p.name}</span>
-            <span class="text-[10px] text-[var(--text-secondary)]">${p.kcal} kcal · ${p.prot}g P</span>
+      // Acciones Rápidas (1 toque)
+      document.getElementById('presetsRow').innerHTML = store.presets.map(p => `
+        <button onclick="logPreset('${p.id}')" class="btn-chip">
+          <div style="text-align:left;">
+            <div class="t-15-sb">${p.name}</div>
+            <div class="t-12 text-sec">${p.kcal} kcal · ${p.prot}g P</div>
           </div>
         </button>
       `).join('');
 
-      // Lista de Comidas
-      const container = document.getElementById('mealsContainer');
+      // Lista de comidas
+      const list = document.getElementById('mealsList');
       if (today.meals.length === 0) {
-        container.innerHTML = `
-          <div class="liquid-glass py-8 px-4 text-center">
-            <i data-lucide="Camera" class="w-5 h-5 text-[var(--text-secondary)] mx-auto mb-2"></i>
-            <p class="text-[13px] font-medium text-white">Sin registros hoy</p>
-            <p class="text-[11px] text-[var(--text-secondary)] mt-0.5">Toca "Batido Desayuno" arriba o haz una foto con el botón central.</p>
+        list.innerHTML = `
+          <div class="card" style="text-align:center; padding:32px 20px;">
+            <p class="t-15-sb">Sin comidas registradas</p>
+            <p class="t-12 text-sec" style="margin-top:4px;">Pulsa "Batido Desayuno" arriba o usa la cámara inferior.</p>
           </div>
         `;
         lucide.createIcons();
         return;
       }
 
-      container.innerHTML = today.meals.map(m => `
-        <div class="liquid-glass p-4">
-          <div class="flex justify-between items-start gap-3">
-            <div class="flex items-center gap-3">
+      list.innerHTML = today.meals.map(m => `
+        <div class="card-compact">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+            <div style="display:flex; align-items:center; gap:12px;">
               ${m.thumb
-                ? `<img src="${m.thumb}" class="w-11 h-11 rounded-2xl object-cover border border-white/15 shrink-0" />`
-                : `<div class="w-11 h-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                     <i data-lucide="Utensils" class="w-4 h-4 text-white/80"></i>
+                ? `<img src="${m.thumb}" style="width:44px; height:44px; border-radius:10px; object-fit:cover; border:1px solid var(--border); flex-shrink:0;" />`
+                : `<div style="width:44px; height:44px; border-radius:10px; background:var(--surface-subtle); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                     <i data-lucide="Utensils" style="width:18px; height:18px;"></i>
                    </div>`
               }
               <div>
-                <h3 class="text-[14px] font-semibold text-white leading-snug">${m.name}</h3>
-                <p class="text-[11px] text-[var(--text-secondary)] mt-0.5">${m.time} · ~${Math.round(m.baseWeight * m.scale)} g</p>
+                <div class="t-15-sb">${m.name}</div>
+                <div class="t-12 text-sec">${m.time} · ~${Math.round(m.baseWeight * m.scale)}g</div>
               </div>
             </div>
-            <button onclick="deleteMeal(${m.id})" class="p-1 text-[var(--text-secondary)] active:text-white">
-              <i data-lucide="X" class="w-4 h-4"></i>
-            </button>
+            <button onclick="removeMeal(${m.id})" class="t-12 text-sec" style="background:none; border:none; padding:4px; cursor:pointer;">✕</button>
           </div>
 
-          <div class="grid grid-cols-4 gap-2 mt-3 py-2 px-3 rounded-2xl bg-black/30 border border-white/5 text-center">
-            <div><span class="text-[10px] text-[var(--text-secondary)] block">Kcal</span><span class="text-[12px] font-semibold text-white">${Math.round(m.baseKcal * m.scale)}</span></div>
-            <div><span class="text-[10px] text-[var(--text-secondary)] block">Prot</span><span class="text-[12px] font-semibold text-white">${Math.round(m.baseProt * m.scale)}g</span></div>
-            <div><span class="text-[10px] text-[var(--text-secondary)] block">Carb</span><span class="text-[12px] font-semibold text-white/80">${Math.round(m.baseCarb * m.scale)}g</span></div>
-            <div><span class="text-[10px] text-[var(--text-secondary)] block">Grasa</span><span class="text-[12px] font-semibold text-white/70">${Math.round(m.baseFat * m.scale)}g</span></div>
+          <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; margin-top:12px; padding:10px; background:var(--surface-subtle); border-radius:10px; text-align:center;">
+            <div><span class="t-12 text-sec" style="display:block;">Kcal</span><span class="t-15-sb">${Math.round(m.baseKcal * m.scale)}</span></div>
+            <div><span class="t-12 text-sec" style="display:block;">Prot</span><span class="t-15-sb">${Math.round(m.baseProt * m.scale)}g</span></div>
+            <div><span class="t-12 text-sec" style="display:block;">Carb</span><span class="t-15-sb">${Math.round(m.baseCarb * m.scale)}g</span></div>
+            <div><span class="t-12 text-sec" style="display:block;">Grasa</span><span class="t-15-sb">${Math.round(m.baseFat * m.scale)}g</span></div>
           </div>
 
-          <div class="flex items-center gap-3 mt-3 pt-2 border-t border-white/5">
-            <span class="text-[11px] text-[var(--text-secondary)] w-20">Ración: <strong class="text-white">${m.scale}x</strong></span>
-            <input type="range" min="0.5" max="2.0" step="0.1" value="${m.scale}" oninput="updateMealScale(${m.id}, this.value)" class="flex-1" />
+          <div style="display:flex; align-items:center; gap:12px; margin-top:12px;">
+            <span class="t-12 text-sec" style="width:76px;">Ración: <strong style="color:var(--text-primary);">${m.scale}x</strong></span>
+            <input type="range" min="0.5" max="2.0" step="0.1" value="${m.scale}" oninput="scaleMeal(${m.id}, this.value)" style="flex:1;" />
           </div>
         </div>
       `).join('');
@@ -1302,7 +1368,9 @@
       lucide.createIcons();
     }
 
+    // Al iniciar: renderiza y sincroniza los datos guardados en tu repositorio de GitHub
     render();
+    pullFromGitHub(false);
   </script>
 </body>
 </html>
